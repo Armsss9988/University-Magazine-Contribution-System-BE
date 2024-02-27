@@ -1,20 +1,45 @@
-// server.js
 const express = require('express');
-const mongoose = require('mongoose');
-const submissionRoutes = require('./routes/submissionRoutes');
-
+const cors = require('cors');
+require('dotenv').config();
 const app = express();
-const PORT = process.env.PORT || 3000;
+const dbConnection = require('./configs/database');
+var bodyParser = require("body-parser");
+const userRouter = require('./routes/userRoute'); 
+const facultyRouter = require('./routes/facultyRoute');
+const submissionRouter = require('./routes/submissionRoutes');
 
-// Connect to MongoDB (replace with your MongoDB URI)
-mongoose.connect('mongodb://localhost/submissionDB', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
+app.use(cors());
 app.use(express.json());
-app.use('/submissions', submissionRoutes);
+app.use(bodyParser.urlencoded({
+    extended: true
+  }));
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.use(bodyParser.json());
+app.use(function middleware(req, res, next) {;//[]
+    var simpleLogger = req.method + " " + req.path + " - " + req.ip;
+    console.log(simpleLogger);
+    next();
+  });
+
+app.use('/api/user', userRouter);
+app.use('/api/submission', submissionRouter);
+app.use('/api/faculty', facultyRouter);
+
+
+
+dbConnection();
+app.get('/message', (req, res) => {
+    res.json({ message: "Hello from server!" });
+});
+app.post('/api/login', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      const { user, token } = await auth.login(email, password);
+      res.json({ user, token });
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  });
+app.listen(8000, () => {
+    console.log(`Server is running on port 8000.`);
 });
