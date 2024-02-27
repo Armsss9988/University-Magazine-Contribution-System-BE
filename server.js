@@ -7,6 +7,9 @@ var bodyParser = require("body-parser");
 const userRouter = require('./routes/userRoute'); 
 const facultyRouter = require('./routes/facultyRoute');
 const submissionRouter = require('./routes/submissionRoutes');
+const commentRoutes = require('./routes/commentRoute');
+
+
 
 app.use(cors());
 app.use(express.json());
@@ -24,6 +27,7 @@ app.use(function middleware(req, res, next) {;//[]
 app.use('/api/user', userRouter);
 app.use('/api/submission', submissionRouter);
 app.use('/api/faculty', facultyRouter);
+app.use('/api/comments', commentRoutes);
 
 
 
