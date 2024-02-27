@@ -4,8 +4,9 @@ require('dotenv').config();
 const app = express();
 const dbConnection = require('./configs/database');
 var bodyParser = require("body-parser");
-const service = require('./services');
-const router = require('./routes/'); 
+const userRouter = require('./routes/userRoute'); 
+const facultyRouter = require('./routes/facultyRoute');
+const submissionRouter = require('./routes/submissionRoutes');
 
 app.use(cors());
 app.use(express.json());
@@ -14,13 +15,15 @@ app.use(bodyParser.urlencoded({
   }));
 
 app.use(bodyParser.json());
-app.use(function middleware(req, res, next) {
+app.use(function middleware(req, res, next) {;//[]
     var simpleLogger = req.method + " " + req.path + " - " + req.ip;
     console.log(simpleLogger);
     next();
   });
 
-app.use('/api/user', router.user);
+app.use('/api/user', userRouter);
+app.use('/api/submission', submissionRouter);
+app.use('/api/faculty', facultyRouter);
 
 
 
