@@ -1,11 +1,10 @@
 const jwt = require('jsonwebtoken');
-const config = require('../config'); // Load configuration
 
 const verifyToken = (req, res, next) => {
   const token = req.headers['x-access-token'] || req.query.token;
   if (!token) return res.status(401).json({ message: 'Unauthorized access' });
 
-  jwt.verify(token, config.jwtSecret, (err, decoded) => {
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) return res.status(401).json({ message: 'Invalid token' });
     req.user = decoded;
     next();

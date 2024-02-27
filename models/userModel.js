@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
   faculty: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Faculty',
-    required: true
+    required: false
   }
 });
 
