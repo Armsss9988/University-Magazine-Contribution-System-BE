@@ -8,7 +8,10 @@ const userRouter = require('./routes/userRoute');
 const facultyRouter = require('./routes/facultyRoute');
 const submissionRouter = require('./routes/submissionRoutes');
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json());
 app.use(bodyParser.urlencoded({
     extended: true
