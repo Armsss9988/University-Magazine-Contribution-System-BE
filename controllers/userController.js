@@ -24,13 +24,10 @@ const signup = async (req, res) => {
       return res.status(400).json({ message: 'Email already in use' });
     }
 
-    // Hash password securely
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     const newUser = new User({
       username,
       email,
-      password: hashedPassword,
+      password: password,
       role,
       faculty: faculty._id, // Assuming you have a foreign key relationship
     });
@@ -53,19 +50,22 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     // Input validation and sanitization
-
-    const user = await User.findOne({ email });
+    console.log({email});
+    console.log({password});
+    const user = await User.findOne({email}).select("+password");
+    console.log(user.password, user.role);
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
-
-    const isMatch = await bcrypt.compare(password, user.password);
+    
+    const isMatch = await user.comparePassword(password);
+   
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     // Generate and send JWT token
-    const token = jwt.sign({ _id: user._id, role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ _id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     res.json({ message: 'Login successful', token });
   } catch (err) {
