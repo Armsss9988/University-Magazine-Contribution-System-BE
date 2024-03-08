@@ -8,7 +8,7 @@ const userRouter = require('./routes/userRoute');
 const facultyRouter = require('./routes/facultyRoute');
 const submissionRouter = require('./routes/submissionRoutes');
 const imageRouter = require('./routes/imageRoute');
-
+const documentRouter = require('./routes/documentRoute');
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.urlencoded({
@@ -26,7 +26,7 @@ app.use('/api/user', userRouter);
 app.use('/api/submission', submissionRouter);
 app.use('/api/faculty', facultyRouter);
 app.use('/api/image', imageRouter);
-
+app.use('/api/document', documentRouter);
 
 
 dbConnection();
