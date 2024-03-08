@@ -3,11 +3,13 @@ const Image = require('../models/imageModel');
 
 const uploadImage = async (req, res) => {
     try {
-      const { originalname, mimetype } = req.file;
+      const { originalname, mimetype, path } = req.file;
+      console.log(req.file);
       const newImage = await Image.create({
         filename: req.file.filename,
         originalName: originalname,
         mimeType: mimetype,
+        dataImg: path,
       });
       res.status(201).json({ message: 'Image uploaded successfully', image: newImage });
     } catch (error) {
@@ -26,7 +28,7 @@ const uploadImage = async (req, res) => {
         }
         // Set the appropriate Content-Type header based on the stored MIME type
         res.set('Content-Type', image.mimeType);
-        res.send(image.fileData); // Assuming you have a field named 'fileData' in your model
+        res.send(image.dataImg); // Assuming you have a field named 'fileData' in your model
       } catch (error) {
         console.error('Error retrieving image:', error);
         res.status(500).json({ error: 'Image retrieval failed' });

@@ -9,6 +9,8 @@ const facultyRouter = require('./routes/facultyRoute');
 const submissionRouter = require('./routes/submissionRoutes');
 const imageRouter = require('./routes/imageRoute');
 const documentRouter = require('./routes/documentRoute');
+
+
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.urlencoded({
@@ -51,22 +53,11 @@ app.listen(8000, () => {
 const mongoose = require('mongoose');
 const multer = require('multer');
 
-// Set up Multer for file uploads
-const storage = multer.memoryStorage(); // Store files in memory
-const upload = multer({ storage });
 
 // Routes
 app.get('/', (req, res) => {
   res.send('Welcome to the image upload API!');
 });
 
-// Upload route
-app.post('/upload', upload.single('image'), (req, res) => {
-  // Handle the uploaded image here
-  // Save it to MongoDB or process it as needed
-  const imageBuffer = req.file.buffer;
-  // Your logic to save/process the image goes here
-  res.status(200).send('Image uploaded successfully!');
-});
 
 

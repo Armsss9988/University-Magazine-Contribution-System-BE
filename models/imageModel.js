@@ -5,6 +5,7 @@ const imageSchema = new mongoose.Schema({
   originalName: String,
   mimeType: String,
   uploadDate: { type: Date, default: Date.now },
+  dataImg: {type: Buffer, required: true},
 });
 
 module.exports = mongoose.model('Image', imageSchema);
