@@ -6,7 +6,7 @@ const dbConnection = require('./configs/database');
 var bodyParser = require("body-parser");
 const userRouter = require('./routes/userRoute'); 
 const facultyRouter = require('./routes/facultyRoute');
-const submissionRouter = require('./routes/submissionRoutes');
+const submissionRouter = require('./routes/submissionRoute');
 
 app.use(cors({
   origin: 'http://localhost:3000',
