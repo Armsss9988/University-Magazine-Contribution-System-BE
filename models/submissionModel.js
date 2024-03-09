@@ -10,8 +10,6 @@ const submissionSchema = new mongoose.Schema({
   updated_at: { type: Date, default: Date.now },
   closed: { type: Boolean, default: false },
   student_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  faculty_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Faculty', required: true }
-  // Add other relevant fields
 });
 
 module.exports = mongoose.model('Submission', submissionSchema);

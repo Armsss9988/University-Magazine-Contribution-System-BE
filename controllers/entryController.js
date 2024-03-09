@@ -1,4 +1,4 @@
-const Entry = require('../models/Entry');
+const Entry = require('../models/entryModel');
 
 const entryController = {
   // READ (với phân quyền)
