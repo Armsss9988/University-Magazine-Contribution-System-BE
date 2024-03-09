@@ -1,83 +1,22 @@
-const express = require('express');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+
 const User = require('../models/userModel'); // Import user model
-const Faculty = require('../models/facultyModel');
 
 // Create a new user
 const signup = async (req, res) => {
   try {
-    const { username, email, password, role, facultyName } = req.body;
-
-    // Input validation and sanitization (consider using libraries like Joi or validator)
-    if (!username || !email || !password || !role || !facultyName) {
-      return res.status(400).json({ message: 'Missing required fields' })
-    }
-    const faculty = await Faculty.findOne({ name: facultyName });
-    if (!faculty) {
-      return res.status(400).json({ message: 'Invalid faculty name' });
-    }
-
-    // Check for existing user with same email
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Email already in use' });
-    }
-
-    const newUser = new User({
-      username,
-      email,
-      password: password,
-      role,
-      faculty: faculty._id, // Assuming you have a foreign key relationship
-    });
-
+    const newUser = req.user ;
     await newUser.save();
-
-    // Generate and send JWT token
-    const token = jwt.sign({ _id: newUser._id, role: newUser.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-    res.json({ message: 'User created successfully', token });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error creating user' });
   }
 };
 
-// User login
-const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Input validation and sanitization
-    console.log({email});
-    console.log({password});
-    const user = await User.findOne({email}).select("+password");
-    console.log(user.password, user.role);
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-    
-    const isMatch = await user.comparePassword(password);
-   
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-
-    // Generate and send JWT token
-    const token = jwt.sign({ _id: user._id,role: user.role }, config.jwtSecret, { expiresIn: '1h' });
-
-    res.json({ message: 'Login successful', token });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Error logging in' });
-  }
-};
 
 // Get user profile (protected route)
 const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = req.user;
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -111,4 +50,4 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = {signup, login, getProfile, getUsers, deleteUser};
+module.exports = {signup, getProfile, getUsers, deleteUser};

@@ -1,21 +1,67 @@
+const Faculty = require('../models/facultyModel');
+const User = require('../models/userModel'); // Import user model
 const jwt = require('jsonwebtoken');
-const User = require('./userModel');
 
-const generateAuthToken = (user) => {
-  const payload = { _id: user._id, role: user.role };
-  const secret = process.env.JWT_SECRET; // Store secret securely in environment variables
-  return jwt.sign(payload, secret, { expiresIn: '1h' });
-};
 
-const login = async (email, password) => {
-  const user = await User.findOne({ email });
-  if (!user) throw new Error('Invalid email or password');
+const checkSignup = async (req, res, next) => {
+    try {
+      const { username, email, password, role, facultyName } = req.body;
+  
+      // Input validation and sanitization (consider using libraries like Joi or validator)
+      if (!username || !email || !password || !role || !facultyName) {
+        return res.status(400).json({ message: 'Missing required fields' })
+      }
+      const faculty = await Faculty.findOne({ name: facultyName });
+      if (!faculty) {
+        return res.status(400).json({ message: 'Invalid faculty name' });
+      }
+  
+      // Check for existing user with same email
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Email already in use' });
+      }
+      const newUser = new User({
+        username,
+        email,
+        password,
+        role,
+        faculty: faculty, // Assuming you have a foreign key relationship
+      });
+      req.user = newUser;
+      const token = jwt.sign({ newUser } , process.env.JWT_SECRET, { expiresIn: '1h' });
+      console.log("New User: " + newUser.username);
+      res.cookie('token', token, { httpOnly: true });
+      res.json({ message: 'User created successfully', token });
+      next();
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Error creating user' });
+    }
+  };
+  
+  // User login
+  const checkLogin = async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      const user = await User.findOne({email}).select("+password");
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+      console.log(user.password, user.role);
+      const isMatch = await user.comparePassword(password);
+     
+      if (!isMatch) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+      const token = jwt.sign({ user } , process.env.JWT_SECRET, { expiresIn: '1h' });
+      res.cookie('token', token, { httpOnly: true });
+      res.json({ message: 'User login successfully', token });
+      // Generate and send JWT token
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Error logging in' });
+    }
+  };
 
-  const isMatch = await user.comparePassword(password);
-  if (!isMatch) throw new Error('Invalid email or password');
-
-  const token = generateAuthToken(user);
-  return { user, token };
-};
-
-module.exports = { login, generateAuthToken };
+  module.exports = { checkLogin, checkSignup};

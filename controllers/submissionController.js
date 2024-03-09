@@ -1,5 +1,5 @@
 // controllers/submissionController.js
-const Submission = require('../models/Submission');
+const Submission = require('../models/submissionModel');
 
 // Create a new submission
 exports.createSubmission = async (req, res) => {
@@ -15,6 +15,14 @@ exports.createSubmission = async (req, res) => {
 exports.getAllSubmissions = async (req, res) => {
   try {
     const submissions = await Submission.find();
+    res.json(submissions);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching submissions' });
+  }
+};
+exports.getSubmissionsbyFaculty = async (req, res) => {
+  try {
+    const submissions = await Submission.Filter();
     res.json(submissions);
   } catch (error) {
     res.status(500).json({ error: 'Error fetching submissions' });
