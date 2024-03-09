@@ -8,6 +8,7 @@ const userRouter = require('./routes/userRoute');
 const facultyRouter = require('./routes/facultyRoute');
 const submissionRouter = require('./routes/submissionRoute');
 const entryRouter = require('./routes/entryRoute');
+const semesterRouter = require('./routes/semesterRoute');
 const cookieParser = require('cookie-parser');
 app.use(cors({
   origin: 'http://localhost:3000',
@@ -29,6 +30,7 @@ app.use('/api/user', userRouter);
 app.use('/api/submission', submissionRouter);
 app.use('/api/faculty', facultyRouter);
 app.use('/api/entry', entryRouter);
+app.use('/api/semester', semesterRouter);
 
 dbConnection();
 app.listen(8000, () => {
