@@ -111,20 +111,5 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// Send Email
-const emailService = require('../services/sendEmail');
 
-async function sendNewArticleEmail(req, res) {
-    try {
-
-        // Gửi email thông báo về bài viết mới
-        await emailService.sendNewArticleEmail(req.body.title, req.body.content, req.body.recipientEmail);
-        
-        res.status(200).json({ message: 'Email sent successfully' });
-    } catch (error) {
-        console.error('Error sending email:', error);
-        res.status(500).json({ message: 'Error sending email' });
-    }
-}
-
-module.exports = {signup, login, getProfile, getUsers, deleteUser, sendNewArticleEmail};
+module.exports = {signup, login, getProfile, getUsers, deleteUser};

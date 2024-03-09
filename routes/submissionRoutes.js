@@ -15,4 +15,7 @@ router.put('/:id', submissionController.updateSubmission);
 // Delete a submission
 router.delete('/:id', submissionController.deleteSubmission);
 
+//send email
+router.post('/sendNewArticleEmail', userController.sendNewArticleEmail);
+
 module.exports = router;

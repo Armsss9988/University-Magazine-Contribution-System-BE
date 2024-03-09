@@ -14,7 +14,7 @@ exports.createSubmission = async (req, res) => {
       }
 
       // Gửi email thông báo về bài viết mới
-      await emailService.sendNewArticleEmail(submission.title, submission.content, req.body.recipientEmail);
+      await emailService.sendNewArticleEmail(submission.title, submission.content, req.body.recipientEmail, req.user.username, pass);
       
       res.status(200).json({ message: 'Email sent successfully' });
   } catch (error) {

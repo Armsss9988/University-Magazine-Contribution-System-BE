@@ -6,7 +6,7 @@ const createFaculty = async (req, res) => {
     console.log(name);  
     // Input validation and sanitization
 
-    const newFaculty = new Faculty( {name} );
+    const newFaculty = new Faculty( {name} );     
     await newFaculty.save();
 
     res.json({ message: 'Faculty created successfully', faculty: newFaculty });

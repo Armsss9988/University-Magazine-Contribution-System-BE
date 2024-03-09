@@ -9,7 +9,6 @@ router.post('/login', userController.login);
 router.get('/profile', authorization.verifyToken, userController.getProfile);
 router.get('/list', userController.getUsers);
 router.delete('/delete/:id', userController.deleteUser);
-//send email
-router.post('/sendNewArticleEmail', userController.sendNewArticleEmail);
+
 
 module.exports = router;
