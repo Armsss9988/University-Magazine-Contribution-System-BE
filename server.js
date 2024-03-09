@@ -8,8 +8,6 @@ const userRouter = require('./routes/userRoute');
 const facultyRouter = require('./routes/facultyRoute');
 const submissionRouter = require('./routes/submissionRoute');
 const cookieParser = require('cookie-parser');
-
-
 app.use(cors({
   origin: 'http://localhost:3000',
   credentials: true

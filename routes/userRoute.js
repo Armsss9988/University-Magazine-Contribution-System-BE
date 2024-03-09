@@ -17,6 +17,6 @@ router.post('/signup', authentication.checkSignup, userController.signup);
 router.post('/login', authentication.checkLogin);
 router.get('/profile', userController.getProfile);
 router.get('/list', userController.getUsers);
-router.delete('/delete/:id',authorization.authorizeRole(['coordinator']),authorization.authorizeFaculty(), userController.deleteUser);
+router.delete('/delete/:id',authorization.authorizeRole(['coordinator']), userController.deleteUser);
 
 module.exports = router;

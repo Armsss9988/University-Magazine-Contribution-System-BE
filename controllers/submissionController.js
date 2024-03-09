@@ -20,14 +20,6 @@ exports.getAllSubmissions = async (req, res) => {
     res.status(500).json({ error: 'Error fetching submissions' });
   }
 };
-exports.getSubmissionsbyFaculty = async (req, res) => {
-  try {
-    const submissions = await Submission.Filter();
-    res.json(submissions);
-  } catch (error) {
-    res.status(500).json({ error: 'Error fetching submissions' });
-  }
-};
 
 // Update a submission
 exports.updateSubmission = async (req, res) => {

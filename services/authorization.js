@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const Faculty = require('../models/facultyModel');
+const Submission = require('../models/submissionModel');
 
 const verifyToken = (req, res, next) => {
   try 
@@ -39,21 +40,5 @@ const authorizeRole = (role) => (req, res, next) => {
   
   next();
 };
-const authorizeFaculty = () => (req, res, next) => {
-  const user = req.user;
-  const userToSee = User.findById(req.params.id);
-  console.log("fac needed: " + userToSee.faculty);
-  console.log("user fac: " + user.faculty);
-  if (!user) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-  // Check faculty affiliation if required
-  if (user.faculty !== userToSee.faculty) {
-    return res.status(403).json({ message: "Forbidden: Access restricted to your faculty" });
-  }
- 
-  next();
-};
 
-
-module.exports = { verifyToken, authorizeFaculty, authorizeRole };
+module.exports = { verifyToken, authorizeRole };
