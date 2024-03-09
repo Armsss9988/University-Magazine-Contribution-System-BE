@@ -1,5 +1,5 @@
 // controllers/submissionController.js
-const Submission = require('../models/Submission');
+const Submission = require('../models/submissionModel');
 
 // Create a new submission
 exports.createSubmission = async (req, res) => {
