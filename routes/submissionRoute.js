@@ -16,7 +16,8 @@ router.get('/list/faculty',authorization.authorizeRole(['coordinator']), submiss
 // Update a submission
 router.put('/coordinator/:id',authorization.authorizeRole(['coordinator']),submissionMiddleware.checkSubmissionFaculty, submissionController.updateSubmission);
 router.put('/student/:id',authorization.authorizeRole(['student']),submissionMiddleware.checkSubmissionUser, submissionController.updateSubmission);
-
+// Update a comment for submission
+router.put('/coordinator/:id/comment',authorization.authorizeRole(['coordinator']),submissionMiddleware.checkSubmissionFaculty, submissionController.updateComment);
 // Delete a submission
 router.delete('/:id',authorization.authorizeRole(['coordinator']),submissionMiddleware.checkSubmissionFaculty, submissionController.deleteSubmission);
 

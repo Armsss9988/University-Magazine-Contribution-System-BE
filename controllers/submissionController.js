@@ -65,6 +65,23 @@ exports.updateSubmission = async (req, res) => {
     res.status(500).json({ error: 'Error updating submission' });
   }
 };
+exports.updateComment = async (req, res) => {
+  try {
+    const { comment_content } = req.body;
+    const updatedSubmission = await Submission.findByIdAndUpdate(
+      req.params.id,
+      {
+        comment_content,
+        comment_at: Date.now
+      },
+      { new: true }
+    );
+    res.json(updatedSubmission);
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating submission' });
+  }
+};
+
 
 // Delete a submission
 exports.deleteSubmission = async (req, res) => {
