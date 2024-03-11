@@ -13,7 +13,7 @@ const verifyToken = (req, res, next) => {
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
       if (err) return res.status(401).json({ message: 'Invalid token' });
       req.user = decoded.user;
-      console.log("decoded: " + decoded.user);
+      console.log("decoded: " + JSON.stringify(decoded.user));
       next();   
     });
   }
@@ -23,16 +23,16 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-const authorizeRole = (role) => (req, res, next) => {
+const authorizeRole = (roles) => (req, res, next) => {
   const user = req.user;
   if (!user) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  console.log("role needed: " + role );
+  console.log("role needed: " + roles );
   console.log("user role: " + user.role);
   // Check role requirement (if any)
-  if (role !== user.role) {
+  if (!roles.includes(user.role)) {
     return res.status(403).json({ message: "Forbidden" });
   }
 
