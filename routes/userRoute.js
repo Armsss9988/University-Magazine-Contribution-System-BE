@@ -16,7 +16,8 @@ router.use((req, res, next) => {
 router.post('/signup', authentication.checkSignup, userController.signup);
 router.post('/login', authentication.checkLogin);
 router.get('/profile', userController.getProfile);
-router.get('/list', userController.getUsers);
-router.delete('/delete/:id',authorization.authorizeRole(['coordinator']), userController.deleteUser);
+router.get('/list/all',authorization.authorizeRole(['admin']), userController.getUsers);
+router.get('/list/faculty',authorization.authorizeRole(['coordinator']), userController.getUsersByFaculty);
+router.delete('/delete/:id',authorization.authorizeRole(['admin']), userController.deleteUser);
 
 module.exports = router;

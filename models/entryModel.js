@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
 const entrySchema = new mongoose.Schema({
-  id: { type: Number, required: true },
-  start_date: { type: Date, required: true },
+  start_date: { type: Date, default: Date.now },
   end_date: { type: Date, required: true },
-  faculty_id: { type: Number, required: true },
-  semester_id: { type: Number, required: true },
+  closed: { type: Boolean, default: false},
+  faculty: { type: mongoose.Schema.Types.ObjectId, ref: 'Faculty', required: true },
+  semester: { type: mongoose.Schema.Types.ObjectId, ref: 'Semester', required: true },
   // Add other relevant fields
 });
 

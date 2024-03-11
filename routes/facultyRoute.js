@@ -3,6 +3,7 @@ const facultyController = require('../controllers/facultyController');
 const authorization = require('../services/authorization');
 const router = express.Router();
 router.use(authorization.verifyToken);
+router.use(authorization.authorizeRole(['admin']));
 
 router.post('/', facultyController.createFaculty);
 router.get('/', facultyController.getFaculties);
