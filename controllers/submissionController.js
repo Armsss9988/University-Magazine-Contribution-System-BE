@@ -1,11 +1,14 @@
 // controllers/submissionController.js
 const Submission = require('../models/submissionModel');
 const Entry = require('../models/entryModel');
+const sendEmail = require('../services/sendEmail');
+const User = require('../models/userModel');
 
 // Create a new submission
 exports.createSubmission = async (req, res) => {
   try {
-    const student = req.user;
+    console.log(req.user._id);
+    const student = await User.findById(req.user._id);
     console.log(student);
     const { title, document_path} = req.body;
     const entry = await Entry.findOne({ faculty: student.faculty, closed: 'false' });
@@ -17,8 +20,8 @@ exports.createSubmission = async (req, res) => {
       {
         title, 
         document_path, 
-        entry: entry._id, 
-        student: student._id
+        entry: entry, 
+        student: student
       });
     await submission.save();
     res.status(201).json(submission);
@@ -56,7 +59,7 @@ exports.updateSubmission = async (req, res) => {
       {
         title,
         document_path,
-        updated_at: Date.now
+        updated_at: Date.now().toString()
       },
       { new: true }
     );
@@ -67,18 +70,30 @@ exports.updateSubmission = async (req, res) => {
 };
 exports.updateComment = async (req, res) => {
   try {
+    const user = await User.findById(req.user._id);
     const { comment_content } = req.body;
+    console.log(comment_content );
+    const currentTime  = Date.now().toString();
+    console.log(currentTime);
     const updatedSubmission = await Submission.findByIdAndUpdate(
       req.params.id,
       {
         comment_content,
-        comment_at: Date.now
+        comment_at: currentTime 
       },
       { new: true }
     );
+    const senderEmail = user.email;
+    console.log("Sender: " + senderEmail);
+    const recipient = await User.findById(updatedSubmission.student);
+    console.log("Recipient: " + recipient);
+    const recipientEmail = recipient.email;
+    console.log("Recipient Email: " + recipientEmail );
+    const title = `Dear ${recipient.username}! You have a new comment on the article you sent us.!`
+    await sendEmail.sendEmailNotification(senderEmail,recipientEmail,title,updatedSubmission.comment_content);
     res.json(updatedSubmission);
   } catch (error) {
-    res.status(500).json({ error: 'Error updating submission' });
+    res.status(500).json({ error: 'Error comment submission' });
   }
 };
 
