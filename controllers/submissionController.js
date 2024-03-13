@@ -4,7 +4,7 @@ const Entry = require('../models/entryModel');
 const sendEmail = require('../services/sendEmail');
 const User = require('../models/userModel');
 const multer = require('multer');
-
+const path = require('path');
 // Create a new submission
 exports.createSubmission = async (req, res) => {
   try {
@@ -16,28 +16,77 @@ exports.createSubmission = async (req, res) => {
       }
     console.log(student);
     
-    const submission = new Submission(
-      {
-        document_path: "hi", 
-        entry: entry, 
-        student: student,
-        title: "hi"
-      });
+
+    
+    const submission = new Submission({
+      document_path: "hi",
+      entry: entry,
+      student: student,
+      title: "hi"
+    });
+    
     const fileName = `${submission._id}${student._id}`;
     const storage = multer.diskStorage({
       destination: './uploads/', // Specify your upload directory
       filename: (req, file, cb) => {
-        cb(null, fileName + file.originalname);  // Keep original filename
+        cb(null, fileName + file.originalname); // Keep the original filename
       }
     });
-    const upload = multer({ storage });
-    upload.array('wordFile')(req, res,async (err) => {
-      submission.document_path = fileName + req.file.originalname;
+    
+    const upload = multer({
+      storage,
+      fileFilter: (req, file, cb) => {
+        // Validate file extensions
+        const allowedExtensions = ['.jpg', '.jpeg', '.png', '.docx', '.doc'];
+        const fileExtension = path.extname(file.originalname).toLowerCase();
+    
+        if (allowedExtensions.includes(fileExtension)) {
+          cb(null, true);
+        } else {
+          cb(new Error('Invalid file type. Only jpg, jpeg, png, and docx files are allowed.'));
+        }
+      }
+    });
+    
+    const maxDocxFiles = 1;
+    
+    upload.array('File', 10)(req, res, async (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'File upload failed' });
+      }
+    
+      const files = req.files;
+      console.log("file: " + files.map(file => file.filename));
+    
+      // Count the number of uploaded docx files
+      const docxFiles = files.filter(file => {
+        const ext = path.extname(file.originalname).toLowerCase();
+        return ext === '.docx' || ext === '.doc';
+      });
+      
+      // Validate docx file count
+      if (docxFiles.length > maxDocxFiles) {
+        return res.status(400).json({ error: 'Only one word file is allowed.' });   
+      }
+    
+      // Update the submission paths based on the uploaded files
+      submission.document_path = files.map(file => file.filename).join(', ');
       submission.title = req.body.title;
-      console.log(submission);
-      await submission.save();
-      res.status(201).json(submission);
-    });    
+    
+      try {
+        console.log(submission);
+        await submission.save();
+        res.status(201).json(submission);
+      } catch (saveError) {
+        console.error(saveError);
+        res.status(500).json({ error: 'Submission save failed' });
+      }
+    });
+    
+    
+    
+
   } catch (error) {
     res.status(500).json({ error: 'Error creating submission' });
   }
@@ -62,6 +111,15 @@ exports.getSubmissionsByFaculty = async (req, res) => {
     res.status(500).json({ message: 'Error getting submissions' });
   }
 };
+exports.getSubmissionsById = async (req, res) => {
+  try {
+    const submissions = await Submission.findById(req.params.id);
+    res.json(submissions);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error getting submissions' });
+  }
+};
 
 // Update a submission
 exports.updateSubmission = async (req, res) => {
@@ -71,8 +129,8 @@ exports.updateSubmission = async (req, res) => {
       req.params.id,
       {
         title,
-        document_path,
-        updated_at: Date.now().toString()
+        document_path, 
+        updated_at: Date.now().toString() 
       },
       { new: true }
     );

@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const userRouter = require('./routes/userRoute'); 
 const facultyRouter = require('./routes/facultyRoute');
 const submissionRouter = require('./routes/submissionRoute');
+app.use(cors());
 const entryRouter = require('./routes/entryRoute');
 const semesterRouter = require('./routes/semesterRoute');
 const cookieParser = require('cookie-parser');

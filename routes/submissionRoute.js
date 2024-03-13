@@ -11,6 +11,7 @@ router.use(authorization.verifyToken);
 router.post('/',authorization.authorizeRole(['student']), submissionController.createSubmission);
 
 // Get submissions
+router.get('/:id',)
 router.get('/list/all',authorization.authorizeRole(['manager']), submissionController.getAllSubmissions);
 router.get('/list/faculty',authorization.authorizeRole(['coordinator']), submissionController.getSubmissionsByFaculty);
 
