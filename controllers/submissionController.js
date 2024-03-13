@@ -3,28 +3,41 @@ const Submission = require('../models/submissionModel');
 const Entry = require('../models/entryModel');
 const sendEmail = require('../services/sendEmail');
 const User = require('../models/userModel');
+const multer = require('multer');
 
 // Create a new submission
 exports.createSubmission = async (req, res) => {
   try {
     console.log(req.user._id);
     const student = await User.findById(req.user._id);
-    console.log(student);
-    const { title, document_path} = req.body;
     const entry = await Entry.findOne({ faculty: student.faculty, closed: 'false' });
       if (!entry) {
         return res.status(400).json({ message: 'We dont have entry for this faculty now' });
       }
     console.log(student);
+    
     const submission = new Submission(
       {
-        title, 
-        document_path, 
+        document_path: "hi", 
         entry: entry, 
-        student: student
+        student: student,
+        title: "hi"
       });
-    await submission.save();
-    res.status(201).json(submission);
+    const fileName = `${submission._id}${student._id}`;
+    const storage = multer.diskStorage({
+      destination: './uploads/', // Specify your upload directory
+      filename: (req, file, cb) => {
+        cb(null, fileName + file.originalname);  // Keep original filename
+      }
+    });
+    const upload = multer({ storage });
+    upload.array('wordFile')(req, res,async (err) => {
+      submission.document_path = fileName + req.file.originalname;
+      submission.title = req.body.title;
+      console.log(submission);
+      await submission.save();
+      res.status(201).json(submission);
+    });    
   } catch (error) {
     res.status(500).json({ error: 'Error creating submission' });
   }

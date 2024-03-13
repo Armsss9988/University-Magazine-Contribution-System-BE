@@ -4,6 +4,7 @@ const router = express.Router();
 const submissionController = require('../controllers/submissionController');
 const authorization = require('../services/authorization');
 const submissionMiddleware = require('../services/submissionAuth');
+
 router.use(authorization.verifyToken);
 
 // Create a new submission

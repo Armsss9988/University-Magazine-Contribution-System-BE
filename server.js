@@ -3,7 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 const app = express();
 const dbConnection = require('./configs/database');
-var bodyParser = require("body-parser");
+const bodyParser = require('body-parser');
 const userRouter = require('./routes/userRoute'); 
 const facultyRouter = require('./routes/facultyRoute');
 const submissionRouter = require('./routes/submissionRoute');
@@ -15,11 +15,8 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-app.use(bodyParser.urlencoded({
-    extended: true
-  }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(bodyParser.json());
 app.use(function middleware(req, res, next) {;//[]
     var simpleLogger = req.method + " " + req.path + " - " + req.ip;
     console.log(simpleLogger);

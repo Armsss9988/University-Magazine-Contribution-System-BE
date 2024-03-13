@@ -28,11 +28,7 @@ const checkSignup = async (req, res, next) => {
         role,
         faculty: faculty, // Assuming you have a foreign key relationship
       });
-      req.user = newUser;
-      const token = jwt.sign({ newUser } , process.env.JWT_SECRET, { expiresIn: '1h' });
-      console.log("New User: " + newUser.username);
-      res.cookie('token', token, { httpOnly: true });
-      res.json({ message: 'User created successfully', token });
+      res.json({ message: 'User created successfully' });
       next();
     } catch (err) {
       console.error(err);

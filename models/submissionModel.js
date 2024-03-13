@@ -14,4 +14,5 @@ const submissionSchema = new mongoose.Schema({
   comment_at: {type: Date, required: false}
 });
 
+
 module.exports = mongoose.model('Submission', submissionSchema);
