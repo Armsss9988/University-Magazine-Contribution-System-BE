@@ -5,9 +5,17 @@ const authentication = require('../services/authentication');
 const router = express.Router();
 
 router.use((req, res, next) => {
-    const excludedPaths = ['/signup', '/login'];
+    const excludedPaths = ['/login'];
     if (!excludedPaths.includes(req.path)) {
       authorization.verifyToken(req, res, next);
+    } else {
+      next();
+    }
+  });
+  router.use((req, res, next) => {
+    const excludedPaths = ['/login','/list/faculty','/profile'];
+    if (!excludedPaths.includes(req.path)) {
+      authorization.authorizeRole(['admin']);
     } else {
       next();
     }
@@ -16,8 +24,8 @@ router.use((req, res, next) => {
 router.post('/signup', authentication.checkSignup, userController.signup);
 router.post('/login', authentication.checkLogin);
 router.get('/profile', userController.getProfile);
-router.get('/list/all',authorization.authorizeRole(['admin']), userController.getUsers);
+router.get('/list/all', userController.getUsers);
 router.get('/list/faculty',authorization.authorizeRole(['coordinator']), userController.getUsersByFaculty);
-router.delete('/delete/:id',authorization.authorizeRole(['admin']), userController.deleteUser);
+router.delete('/delete/:id', userController.deleteUser);
 
 module.exports = router;

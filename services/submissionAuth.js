@@ -31,13 +31,16 @@ const checkSubmissionFaculty  = async (req, res, next) => {
   }
   };
   const checkSubmissionUser  = async (req, res, next) => {
+    console.log("Checking user of submission!");
     const submission = await Submission.findById(req.param.id);
-    console.log("Checking user of submission!")
+    if(!submission){
+      return res.status(500).json({ error: `Error get submission!` });
+    }
     if(submission.student !== req.user)
     {
       return res.status(500).json({ error: `Student do not have the right to update other people's submission ` });
     }
-    console.log("Done user of submission!")
+    console.log("Done check user of submission!");
     next();
   }
  

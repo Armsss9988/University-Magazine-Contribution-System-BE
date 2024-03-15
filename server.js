@@ -7,17 +7,21 @@ const bodyParser = require('body-parser');
 const userRouter = require('./routes/userRoute'); 
 const facultyRouter = require('./routes/facultyRoute');
 const submissionRouter = require('./routes/submissionRoute');
-app.use(cors());
 const entryRouter = require('./routes/entryRoute');
 const semesterRouter = require('./routes/semesterRoute');
 const cookieParser = require('cookie-parser');
+const fileUpload = require('express-fileupload');
 app.use(cors({
   origin: 'http://localhost:3000',
   credentials: true
 }));
 app.use(express.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(fileUpload());
+app.use(bodyParser.urlencoded({
+    extended: true
+  }));
 app.use(cookieParser());
+app.use(bodyParser.json());
 app.use(function middleware(req, res, next) {;//[]
     var simpleLogger = req.method + " " + req.path + " - " + req.ip;
     console.log(simpleLogger);
