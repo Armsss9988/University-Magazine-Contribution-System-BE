@@ -1,33 +1,34 @@
-// sendEmail.js
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
+exports.sendEmailNotification = async (sender, role,recipient, subject, content) => 
+{
+const SYSTEM_EMAIL = "umc.gre.fpt@gmail.com"; 
+const SYSTEM_PASSWORD = "xolq jtbu oypa dqyj"; 
+const RECIPIENT_EMAIL = recipient;
+const SUBJECT = subject;
+const MESSAGE_BODY = `
+${content}
 
-async function sendNewArticleEmail(title, content, user, pass, coordinatorEmail) {
-    let transporter = nodemailer.createTransport({
-        service: 'Gmail',
-        auth: {
-            user: user,
-            pass: pass
-        }
+
+${role} :
+${sender}
+`;
+
+    const transporter = nodemailer.createTransport({
+    service: "gmail", 
+    auth: {
+        user: SYSTEM_EMAIL,
+        pass: SYSTEM_PASSWORD,
+    },
     });
-
-    let coordinatorMailOptions = {
-        from: user,
-        to: coordinatorEmail,
-        subject: 'Thông báo: Báo cáo mới từ sinh viên',
-        text: `Xin chào,\n\nSinh viên vừa gửi một báo cáo mới.\n\nTiêu đề: ${title}\n\nNội dung: ${content}\n\nXin cảm ơn!`
-    };
-
     try {
-        // Gửi email cho điều phối viên và chờ kết quả
-        await transporter.sendMail(coordinatorMailOptions);
-
-        // Trả về kết quả thành công
-        return { success: true, message: 'Email sent successfully to coordinator.' };
-    } catch (error) {
-        // Trả về thông báo lỗi nếu có lỗi xảy ra
-        console.error("Failed to send email:", error);
-        return { success: false, message: 'Failed to send email to coordinator.' };
+        const info = await transporter.sendMail({
+        from: SYSTEM_EMAIL,
+        to: RECIPIENT_EMAIL,
+        subject: SUBJECT,
+        text: MESSAGE_BODY,
+        });
+        console.log(`Email sent: ${info.response}`);
+    } catch (err) {
+        console.error('Error sending email:', err);
     }
-}
-
-module.exports = { sendNewArticleEmail };
+};
