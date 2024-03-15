@@ -12,10 +12,10 @@ router.post('/',authorization.authorizeRole(['student']), submissionController.c
 
 // Get submissions
 router.get('/student/:id',authorization.authorizeRole(['student']),submissionMiddleware.checkSubmissionUser,submissionController.getSubmissionsById);
-router.get('/manager/:id',authorization.authorizeRole(['manager']),submissionController.getSubmissionsById);
+router.get('/manager/:id',authorization.authorizeRole(['manager']),submissionMiddleware.checkSelectedSubmission, submissionController.getSubmissionsById);
 router.get('/coordinator/:id',authorization.authorizeRole(['coordinator']),submissionMiddleware.checkSubmissionFaculty,submissionController.getSubmissionsById);
 //Get list of subbmissions
-router.get('/list/all',authorization.authorizeRole(['manager']), submissionController.getAllSubmissions);
+router.get('/list/selected',authorization.authorizeRole(['manager']), submissionController.getAllSelectedSubmissions);
 router.get('/list/faculty',authorization.authorizeRole(['coordinator']), submissionController.getSubmissionsByFaculty);
 //Edit submission
 router.put('/coordinator/edit/:id',authorization.authorizeRole(['coordinator']),submissionMiddleware.checkSubmissionFaculty, submissionController.editSubmission);

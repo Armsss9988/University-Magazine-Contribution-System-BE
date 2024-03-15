@@ -43,5 +43,19 @@ const checkSubmissionFaculty  = async (req, res, next) => {
     console.log("Done check user of submission!");
     next();
   }
+
+  const checkSelectedSubmission = async (req, res, next) => {
+    console.log("Checking status of submission!");
+    const submission = await Submission.findById(req.params.id);
+    if(!submission){
+      return res.status(500).json({ error: `Error get submission!` });
+    }
+    const status = submission.status;
+    if(!status.equals("selected")){
+      return res.status(403).json({ error: `You dont have permission to view this submission!` });
+    }
+    console.log("Done check status of submission!");
+    next();
+  }
  
-  module.exports = { checkSubmissionFaculty, checkSubmissionUser};
+  module.exports = { checkSubmissionFaculty, checkSubmissionUser, checkSelectedSubmission};

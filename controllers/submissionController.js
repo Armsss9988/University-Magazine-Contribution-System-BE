@@ -108,9 +108,9 @@ exports.createSubmission = async (req, res) => {
 
 
 // Get all submissions
-exports.getAllSubmissions = async (req, res) => {
+exports.getAllSelectedSubmissions = async (req, res) => {
   try {
-    const submissions = await Submission.find();
+    const submissions = await Submission.find({status: "selected"});
     res.json(submissions);
   } catch (error) {
     res.status(500).json({ error: "Error fetching submissions" });
