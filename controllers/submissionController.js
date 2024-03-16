@@ -4,6 +4,7 @@ const Entry = require("../models/entryModel");
 const sendEmail = require("../services/sendEmail");
 const User = require("../models/userModel");
 const path = require("path");
+const Semester = require('../models/semesterModel');
 // Create a new submission
 exports.createSubmission = async (req, res) => {
   try {
@@ -252,6 +253,21 @@ exports.updateSubmission = async (req, res) => {
         .status(400)
         .json({ message: "You dont have title for this submission now" });
     }
+    const entry = await Entry.findOne({
+      faculty: student.faculty,
+      closed: "true",
+    });
+    const semester  = await Semester.findById(entry.semester);
+    if (!semester) {
+      return res
+        .status(400)
+        .json({ message: "We dont have semester for this entry of submission now" });
+    }
+    if(semester.closed){
+      return res
+        .status(400)
+        .json({ message: "Semester closed" });
+    }
     console.log(req.body.title);
     const updatedSubmission = await Submission.findByIdAndUpdate(
       req.params.id,
@@ -369,6 +385,4 @@ exports.deleteSubmission = async (req, res) => {
     res.status(500).json({ error: "Error deleting submission" });
   }
 };
-const checkClosed = () => {
-  
-}
+
