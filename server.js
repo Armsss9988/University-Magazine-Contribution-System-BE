@@ -11,6 +11,8 @@ const entryRouter = require('./routes/entryRoute');
 const semesterRouter = require('./routes/semesterRoute');
 const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload');
+const cronSchedule = require('./services/checkTime');
+cronSchedule;
 app.use(cors({
   origin: 'http://localhost:3000',
   credentials: true

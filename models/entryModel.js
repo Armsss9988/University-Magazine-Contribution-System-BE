@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const entrySchema = new mongoose.Schema({
-  start_date: { type: Date, default: Date.now },
+  start_date: { type: Date, require: true},
   end_date: { type: Date, required: true },
   closed: { type: Boolean, default: false},
   faculty: { type: mongoose.Schema.Types.ObjectId, ref: 'Faculty', required: true },
