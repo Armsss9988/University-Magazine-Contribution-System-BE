@@ -15,9 +15,9 @@ router.post('/',authorization.authorizeRole(['student']), submissionController.c
 router.get('/:id',authorization.authorizeRole(['student','manager','coordinator']),submissionMiddleware,submissionController.getSubmissionsById);
 
 //Read documnent in submission
-router.get('/document',authorization.authorizeRole(['student']), submissionController.readDocxFile);
+router.get('/document/',authorization.authorizeRole(['student']), submissionController.readDocxFile);
 //Get list of subbmissions
-router.get('/list',authorization.authorizeRole(['manager','coordinator']), submissionController.getSubmissionsByRole);
+router.get('/list/data',authorization.authorizeRole(['manager','coordinator','student']), submissionController.getSubmissionsByRole);
 //Edit submission
 router.put('/edit/:id',authorization.authorizeRole(['coordinator','student']),submissionMiddleware, submissionController.editSubmission);
 // Update a submission

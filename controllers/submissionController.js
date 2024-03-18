@@ -117,15 +117,16 @@ exports.createSubmission = async (req, res) => {
 
 exports.getSubmissionsByRole = async (req, res) =>{
   try {
-    const user = req.user?.id || null;
-    if(user == null){
+    const user = req.user;
+    console.log(user.role);
+    if(user.role === "manager"){
       this.getAllSelectedSubmissions(req,res);
     }
-    else if(user.role.equals("manager")){
-      this.getAllSelectedSubmissions(req,res);
-    }
-    else if(user.role.equals("coordinator")){
+    else if(user.role === "coordinator"){
       this.getSubmissionsByFaculty(req,res);
+    }
+    else if(user.role ==="student" ){
+      this.getSubmissionsByUser(req,res);
     }
   } catch (error) {
     res.status(500).json({ error: "Error fetching submissions" });
@@ -145,6 +146,16 @@ exports.getSubmissionsByFaculty = async (req, res) => {
   try {
     const { faculty } = req.user.faculty; // Get faculty ID from query parameter
     const submissions = await Submission.find({ faculty });
+    res.json(submissions);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error getting submissions" });
+  }
+};
+exports.getSubmissionsByUser = async (req, res) => {
+  try {
+    const user = req.user; 
+    const submissions = await Submission.find({ student: user });
     res.json(submissions);
   } catch (err) {
     console.error(err);

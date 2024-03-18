@@ -3,7 +3,7 @@ const Faculty = require('../models/facultyModel');
 const Submission = require('../models/submissionModel');
 
 const checkRBAC = async (req, res, next) =>{
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id);
     if(!user){
       return res.status(401).json({ message: "Unauthorized" });
     }
