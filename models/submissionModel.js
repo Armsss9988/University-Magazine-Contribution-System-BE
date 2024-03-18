@@ -8,7 +8,7 @@ const submissionSchema = new mongoose.Schema({
   created_at: { type: Date, default: localTime.getDateNow },
   updated_at: { type: Date, default: localTime.getDateNow },
   closed: { type: Boolean, default: false },
-  status: { type: String, enum: ['approved', 'rejected', 'submitted'], default: 'submitted'},
+  status: { type: String, enum: ['selected', 'rejected', 'submitted'], default: 'submitted'},
   student: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   comment_content: {type: String, required: false},
   comment_at: {type: Date, required: false}

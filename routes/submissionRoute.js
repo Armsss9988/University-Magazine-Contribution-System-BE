@@ -4,6 +4,7 @@ const router = express.Router();
 const submissionController = require('../controllers/submissionController');
 const authorization = require('../services/authorization');
 const submissionMiddleware = require('../services/submissionAuth');
+const zipDownload = require('../services/zipDownload'); 
 
 router.use(authorization.verifyToken);
 
@@ -14,6 +15,9 @@ router.post('/',authorization.authorizeRole(['student']), submissionController.c
 router.get('/student/:id',authorization.authorizeRole(['student']),submissionMiddleware.checkSubmissionUser,submissionController.getSubmissionsById);
 router.get('/manager/:id',authorization.authorizeRole(['manager']),submissionMiddleware.checkSelectedSubmission, submissionController.getSubmissionsById);
 router.get('/coordinator/:id',authorization.authorizeRole(['coordinator']),submissionMiddleware.checkSubmissionFaculty,submissionController.getSubmissionsById);
+
+//Read documnent in submission
+router.get('/document/',authorization.authorizeRole(['student']), submissionController.readDocxFile);
 //Get list of subbmissions
 router.get('/list/selected',authorization.authorizeRole(['manager']), submissionController.getAllSelectedSubmissions);
 router.get('/list/faculty',authorization.authorizeRole(['coordinator']), submissionController.getSubmissionsByFaculty);
@@ -28,4 +32,6 @@ router.put('/coordinator/comment/:id',authorization.authorizeRole(['coordinator'
 // Delete a submission
 router.delete('/:id',authorization.authorizeRole(['coordinator']),submissionMiddleware.checkSubmissionFaculty, submissionController.deleteSubmission);
 
+//Download selected submission
+router.get('manager/download', authorization.authorizeRole(['manager']), zipDownload);
 module.exports = router;
