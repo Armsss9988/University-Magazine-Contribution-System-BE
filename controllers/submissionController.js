@@ -5,10 +5,11 @@ const sendEmail = require("../services/sendEmail");
 const User = require("../models/userModel");
 const path = require("path");
 const Semester = require("../models/semesterModel");
-const fs = require("fs");
+const fs = require("fs").promises;
 const mammoth = require("mammoth");
 const createDOMPurify = require('dompurify');
 const { JSDOM } = require('jsdom');
+const rootDir = path.resolve(__dirname, '..');
 
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
@@ -166,7 +167,21 @@ exports.getSubmissionsByUser = async (req, res) => {
 exports.getSubmissionsById = async (req, res) => {
   try {
     const submissions = await Submission.findById(req.params.id);
-    res.json(submissions);
+    document_pathArr = submissions.document_path.split(',');
+      console.log({document_pathArr});
+      const files = [];
+      for (const document of document_pathArr) {    
+        const filePath = `${rootDir}/uploads/${document}`;
+        console.log(filePath);
+        const fileBuffer = await fs.readFile(filePath).then((data) => {
+          files.push(fileBuffer);
+        })
+        .catch((error) => {
+            console.error("Error reading file:", error);
+        });;
+               
+      };
+    res.json({submissions, files});
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Error getting submissions" });

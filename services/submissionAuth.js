@@ -7,14 +7,15 @@ const checkRBAC = async (req, res, next) =>{
     if(!user){
       return res.status(401).json({ message: "Unauthorized" });
     }
+    console.log(req.params);
     if (user.role.includes('manager')) {
-      checkSelectedSubmission();
+      checkSelectedSubmission(req,res);
     }
     if (user.role.includes('coordinator')) {
-      checkSubmissionFaculty();
+      checkSubmissionFaculty(req,res);
     }
     if (user.role.includes('student')) {
-      checkSubmissionUser();
+      checkSubmissionUser(req,res);
     }
     next();
 }
@@ -47,14 +48,15 @@ const checkSubmissionFaculty  = async (req, res) => {
   }
   };
   const checkSubmissionUser  = async (req, res) => {
+    const user = await User.findById(req.user._id);
     console.log("Checking user of submission!");
-    const submission = await Submission.findById(req.param.id);
+    const submission = await Submission.findById(req.params.id);
     if(!submission){
-      return res.status(500).json({ error: `Error get submission!` });
+      return res.status(500).json({ message: `Error get submission!` });
     }
-    if(submission.student !== req.user)
+    if(!user.equals(submission.student))
     {
-      return res.status(500).json({ error: `Student do not have the right to update other people's submission ` });
+      return res.status(500).json({ message: `Student do not have the right to update other people's submission ` });
     }
     console.log("Done check user of submission!");
   }
