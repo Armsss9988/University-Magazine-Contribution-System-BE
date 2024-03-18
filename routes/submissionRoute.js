@@ -12,25 +12,20 @@ router.use(authorization.verifyToken);
 router.post('/',authorization.authorizeRole(['student']), submissionController.createSubmission);
 
 // Get submissions
-router.get('/student/:id',authorization.authorizeRole(['student']),submissionMiddleware.checkSubmissionUser,submissionController.getSubmissionsById);
-router.get('/manager/:id',authorization.authorizeRole(['manager']),submissionMiddleware.checkSelectedSubmission, submissionController.getSubmissionsById);
-router.get('/coordinator/:id',authorization.authorizeRole(['coordinator']),submissionMiddleware.checkSubmissionFaculty,submissionController.getSubmissionsById);
+router.get('/:id',authorization.authorizeRole(['student','manager','coordinator']),submissionMiddleware,submissionController.getSubmissionsById);
 
 //Read documnent in submission
-router.get('/document/',authorization.authorizeRole(['student']), submissionController.readDocxFile);
+router.get('/document',authorization.authorizeRole(['student']), submissionController.readDocxFile);
 //Get list of subbmissions
-router.get('/list/selected',authorization.authorizeRole(['manager']), submissionController.getAllSelectedSubmissions);
-router.get('/list/faculty',authorization.authorizeRole(['coordinator']), submissionController.getSubmissionsByFaculty);
+router.get('/list',authorization.authorizeRole(['manager','coordinator']), submissionController.getSubmissionsByRole);
 //Edit submission
-router.put('/coordinator/edit/:id',authorization.authorizeRole(['coordinator']),submissionMiddleware.checkSubmissionFaculty, submissionController.editSubmission);
-router.put('/student/edit/:id',authorization.authorizeRole(['student']),submissionMiddleware.checkSubmissionUser, submissionController.editSubmission);
+router.put('/edit/:id',authorization.authorizeRole(['coordinator','student']),submissionMiddleware, submissionController.editSubmission);
 // Update a submission
-router.put('/coordinator/update/:id',authorization.authorizeRole(['coordinator']),submissionMiddleware.checkSubmissionFaculty, submissionController.updateSubmission);
-router.put('/student/update/:id',authorization.authorizeRole(['student']),submissionMiddleware.checkSubmissionUser, submissionController.updateSubmission);
+router.put('/update/:id',authorization.authorizeRole(['coordinator','student']),submissionMiddleware, submissionController.updateSubmission);
 // Update a comment for submission
-router.put('/coordinator/comment/:id',authorization.authorizeRole(['coordinator']),submissionMiddleware.checkSubmissionFaculty, submissionController.updateComment);
+router.put('/comment/:id',authorization.authorizeRole(['coordinator']),submissionMiddleware, submissionController.updateComment);
 // Delete a submission
-router.delete('/:id',authorization.authorizeRole(['coordinator']),submissionMiddleware.checkSubmissionFaculty, submissionController.deleteSubmission);
+router.delete('/:id',authorization.authorizeRole(['coordinator']),submissionMiddleware, submissionController.deleteSubmission);
 
 //Download selected submission
 router.get('manager/download', authorization.authorizeRole(['manager']), zipDownload);

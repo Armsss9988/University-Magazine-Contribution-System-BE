@@ -1,7 +1,24 @@
 const User = require('../models/userModel');
 const Faculty = require('../models/facultyModel');
 const Submission = require('../models/submissionModel');
-const checkSubmissionFaculty  = async (req, res, next) => {
+
+const checkRBAC = async (req, res, next) =>{
+    const user = await User.findById(req.user.id);
+    if(!user){
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    if (user.role.includes('manager')) {
+      checkSelectedSubmission();
+    }
+    if (user.role.includes('coordinator')) {
+      checkSubmissionFaculty();
+    }
+    if (user.role.includes('student')) {
+      checkSubmissionUser();
+    }
+    next();
+}
+const checkSubmissionFaculty  = async (req, res) => {
   try {
     console.log("Checking faculty of submission!")
     const user = await User.findById(req.user._id);
@@ -24,13 +41,12 @@ const checkSubmissionFaculty  = async (req, res, next) => {
   
     // Check faculty affiliation if required
     console.log("Done check faculty!")
-    next();
   }
   catch (error) {
     res.status(500).json({ error: 'Error check Submission Faculty' });
   }
   };
-  const checkSubmissionUser  = async (req, res, next) => {
+  const checkSubmissionUser  = async (req, res) => {
     console.log("Checking user of submission!");
     const submission = await Submission.findById(req.param.id);
     if(!submission){
@@ -41,10 +57,9 @@ const checkSubmissionFaculty  = async (req, res, next) => {
       return res.status(500).json({ error: `Student do not have the right to update other people's submission ` });
     }
     console.log("Done check user of submission!");
-    next();
   }
 
-  const checkSelectedSubmission = async (req, res, next) => {
+  const checkSelectedSubmission = async (req, res) => {
     console.log("Checking status of submission!");
     const submission = await Submission.findById(req.params.id);
     if(!submission){
@@ -55,7 +70,6 @@ const checkSubmissionFaculty  = async (req, res, next) => {
       return res.status(403).json({ error: `You dont have permission to view this submission!` });
     }
     console.log("Done check status of submission!");
-    next();
   }
  
-  module.exports = { checkSubmissionFaculty, checkSubmissionUser, checkSelectedSubmission};
+  module.exports = checkRBAC;

@@ -115,6 +115,22 @@ exports.createSubmission = async (req, res) => {
   }
 };
 
+exports.getSubmissionsByRole = async (req, res) =>{
+  try {
+    const user = req.user?.id || null;
+    if(user == null){
+      this.getAllSelectedSubmissions(req,res);
+    }
+    else if(user.role.equals("manager")){
+      this.getAllSelectedSubmissions(req,res);
+    }
+    else if(user.role.equals("coordinator")){
+      this.getSubmissionsByFaculty(req,res);
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching submissions" });
+  }
+}
 // Get all submissions
 exports.getAllSelectedSubmissions = async (req, res) => {
   try {
