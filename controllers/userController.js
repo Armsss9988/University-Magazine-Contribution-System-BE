@@ -1,16 +1,6 @@
 
 const User = require('../models/userModel'); 
-// Create a new user
-const signup = async (req, res) => {
-  try {
-    const newUser = new User(req.body);
-    await newUser.save();
-    res.json({ message: 'Creating Successful!!' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Error creating user' });
-  }
-};
+
 
 
 // Get user profile (protected route)
@@ -67,4 +57,4 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = {signup, getProfile, getUsers, getUsersByFaculty, deleteUser};
+module.exports = { getProfile, getUsers, getUsersByFaculty, deleteUser};

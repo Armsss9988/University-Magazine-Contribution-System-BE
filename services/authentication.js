@@ -3,7 +3,7 @@ const User = require('../models/userModel'); // Import user model
 const jwt = require('jsonwebtoken');
 
 
-const checkSignup = async (req, res, next) => {
+const checkSignup = async (req, res) => {
     try {
       const { username, email, password, role, facultyName } = req.body;
   
@@ -21,7 +21,15 @@ const checkSignup = async (req, res, next) => {
       if (existingUser) {
         return res.status(400).json({ message: 'Email already in use' });
       }
-      next();
+      const newUser = new User({
+        username,
+        email,
+        password,
+        role,
+        faculty: faculty, // Assuming you have a foreign key relationship
+      });
+      await newUser.save();
+      res.json(newUser);
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: 'Error creating user' });

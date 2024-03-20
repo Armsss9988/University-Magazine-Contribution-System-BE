@@ -22,7 +22,7 @@ router.use((req, res, next) => {
     }
   });
 
-router.post('/signup', authentication.checkSignup, userController.signup);
+router.post('/signup', authentication.checkSignup);
 router.post('/login', authentication.checkLogin);
 router.get('/profile', userController.getProfile);
 router.get('/list/all', userController.getUsers);
