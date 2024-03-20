@@ -16,6 +16,7 @@ router.use((req, res, next) => {
     const excludedPaths = ['/login','/list/faculty','/profile'];
     if (!excludedPaths.includes(req.path)) {
       authorization.authorizeRole(['admin']);
+      next();
     } else {
       next();
     }

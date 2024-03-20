@@ -21,14 +21,6 @@ const checkSignup = async (req, res, next) => {
       if (existingUser) {
         return res.status(400).json({ message: 'Email already in use' });
       }
-      const newUser = new User({
-        username,
-        email,
-        password,
-        role,
-        faculty: faculty, // Assuming you have a foreign key relationship
-      });
-      res.json({ message: 'User created successfully' });
       next();
     } catch (err) {
       console.error(err);

@@ -1,11 +1,11 @@
 
-const User = require('../models/userModel'); // Import user model
-
+const User = require('../models/userModel'); 
 // Create a new user
 const signup = async (req, res) => {
   try {
-    const newUser = req.user ;
+    const newUser = new User(req.body);
     await newUser.save();
+    res.json({ message: 'Creating Successful!!' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error creating user' });
