@@ -1,7 +1,6 @@
 // controllers/submissionController.js
 const Submission = require("../models/submissionModel");
 const Entry = require("../models/entryModel");
-const sendEmail = require("../services/sendEmail");
 const User = require("../models/userModel");
 const path = require("path");
 const Semester = require("../models/semesterModel");
@@ -10,9 +9,10 @@ const mammoth = require("mammoth");
 const createDOMPurify = require('dompurify');
 const { JSDOM } = require('jsdom');
 const rootDir = path.resolve(__dirname, '..');
-
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
+const emailService = require('../services/sendEmail');
+
 // Create a new submission
 exports.createSubmission = async (req, res) => {
   try {
@@ -110,7 +110,24 @@ exports.createSubmission = async (req, res) => {
       submission.document_path = fileNames.toString();
     }
     await submission.save();
-    res.json({ message: "Submission created success!!", errorLog });
+    const user = await User.findById(req.user._id);
+    const coordinator = await User.findOne({ faculty: user.faculty, role: 'coordinator' });
+    res.status(201).json(submission);
+    try {
+      // Lấy dữ liệu bài viết từ cơ sở dữ liệu
+      if (!submission) {
+          return res.status(404).json({ message: 'Article not found' });
+      }
+    const emailSubject = "New submission!!"
+    const emailContent = `New submission from student ${user.username}. You have 14 days to make a comment.`
+      // Gửi email thông báo về bài viết mới
+      await emailService.sendEmailNotification(user.email, user.role, coordinator.email, emailSubject, emailContent);
+      
+      res.status(200).json({message: "Submission created success!!", message: 'Email sent successfully' });
+  } catch (error) {
+      console.error('Error sending email:', error);
+      res.status(500).json({ message: 'Error sending email' });
+  }
   } catch (error) {
     res.status(500).json({ error: "Error creating submission" });
   }
@@ -450,3 +467,4 @@ exports.deleteSubmission = async (req, res) => {
     res.status(500).json({ error: "Error deleting submission" });
   }
 };
+

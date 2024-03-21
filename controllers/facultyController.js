@@ -3,10 +3,10 @@ const Faculty = require('../models/facultyModel');
 const createFaculty = async (req, res) => {
   try {
     const { name } = req.body; // Destructure body data
-
+    console.log(name);  
     // Input validation and sanitization
 
-    const newFaculty = new Faculty({ name });
+    const newFaculty = new Faculty( {name} );     
     await newFaculty.save();
 
     res.json({ message: 'Faculty created successfully', faculty: newFaculty });

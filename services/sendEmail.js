@@ -1,5 +1,5 @@
 const nodemailer = require("nodemailer");
-exports.sendEmailNotification = async (sender,recipient, subject, content) => 
+exports.sendEmailNotification = async (sender, role,recipient, subject, content) => 
 {
 const SYSTEM_EMAIL = "umc.gre.fpt@gmail.com"; 
 const SYSTEM_PASSWORD = "xolq jtbu oypa dqyj"; 
@@ -9,7 +9,7 @@ const MESSAGE_BODY = `
 ${content}
 
 
-Coordinator:
+${role} :
 ${sender}
 `;
 

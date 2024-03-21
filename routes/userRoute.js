@@ -29,4 +29,5 @@ router.get('/list/all', userController.getUsers);
 router.get('/list/faculty',authorization.authorizeRole(['coordinator']), userController.getUsersByFaculty);
 router.delete('/delete/:id', userController.deleteUser);
 
+
 module.exports = router;
