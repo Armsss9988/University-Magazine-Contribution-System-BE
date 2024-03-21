@@ -35,13 +35,6 @@ try {
         const fileBuffer = await fs.readFile(filePath);
         await archive.file(filePath, { name: document });
       };
-      // Option 1: Using promises (recommended)
-       // Replace with actual file extension
-
-      // Option 2: Using promisified fs functions (optional)
-      // const readFile = promisify(fs.readFile);
-      // const fileBuffer = await readFile(filePath);
-      // await archive.append(fileBuffer, { name: contribution.title + '.pdf' });
     }
 
     // Finalize the archive

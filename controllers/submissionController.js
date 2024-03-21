@@ -431,33 +431,6 @@ exports.updateComment = async (req, res) => {
   }
 };
 
-exports.readDocxFile = async (req, res) => {
-  // const submission = await Submission.findById(req.query.id);
-  // const docName = submission.document_path.filter((path) => {path.split(".")[path.split(".").length-1] == 'docx' || 'doc'});
-  const docPath = path.join(__dirname, "..", "uploads", req.query.name); // Assuming document path is stored
-  const content = fs.readFileSync(docPath, "binary");
-  convertDocxToHtml(docPath).then((html) => {
-    if (html) {
-      res.setHeader('Content-Type', 'text/html');
-      res.send(html);
-    } else {
-      res.status(500).json({ error: "Error reading submission" });
-    }
-  });
-};
-async function convertDocxToHtml(filePath) {
-  try {
-    const result = await mammoth.convertToHtml({ path: filePath });
-    const sanitizedHtml = DOMPurify.sanitize(result.value);
-    console.log("HTML: " + result.value);
-    console.log("Fixed: " + sanitizedHtml);
-    return sanitizedHtml; // HTML content
-  } catch (error) {
-    console.error("Error converting docx to html:", error);
-    return null; // Handle error appropriately
-  }
-}
-
 // Delete a submission
 exports.deleteSubmission = async (req, res) => {
   try {

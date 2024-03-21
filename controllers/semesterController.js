@@ -1,42 +1,114 @@
-const Semester = require('../models/semesterModel');
+const Semester = require("../models/semesterModel");
 
-const semesterController = {
-  // READ (tất cả học kỳ)
-  async getSemesters(req, res) {
+const getSemesters = async (req, res) => {
+  try {
     const semesters = await Semester.find();
     res.json(semesters);
-  },
-
-  // CREATE (tạo học kỳ mới)
-  async createSemester(req, res) {
-    try {
-      const newSemester = new Semester(req.body);
-      await newSemester.save();
-      res.json(newSemester);
-    } catch (err) {
-      if (err.code === 11000) { // Handle duplicate academic year error
-        return res.status(400).send('Academic year must be unique');
-      }
-      return res.status(500).send('Error creating semester');
-    }
-  },
-
-  // UPDATE (cập nhật học kỳ) - Tùy chọn, cần đảm bảo tính hợp lệ
-  async updateSemester(req, res) {
-    const { id } = req.params;
-    const updatedSemester = await Semester.findByIdAndUpdate(id, req.body, { new: true }); // Return updated document
-    if (!updatedSemester) {
-      return res.status(404).send('Semester not found');
-    }
-    res.json(updatedSemester);
-  },
-
-  // DELETE (xóa học kỳ) - Tùy chọn, cần đảm bảo tính hợp lệ
-  async deleteSemester(req, res) {
-    const { id } = req.params;
-    await Semester.findByIdAndRemove(id);
-    res.json({ message: 'Semester deleted' });
-  },
+  } 
+  catch (err) {
+    return res.status(500).json({ message: "Error retrieving semesters" }); // Informative error message
+  }
 };
 
-module.exports = semesterController;
+const createSemester = async (req, res) => {
+  try {
+    const semester = new Semester(req.body);
+    const overlappingSemesters = await Semester.find({
+      $or: [
+        {
+          start_date: {
+            $gte: semester.start_date,
+            $lt: semester.final_closure_date,
+          },
+        },
+        {
+          final_closure_date: {
+            $gt: semester.start_date,
+            $lte: semester.final_closure_date,
+          },
+        },
+      ],
+    });
+    if (overlappingSemesters.length > 0) {
+      return res
+        .status(400)
+        .json({
+          message: "Time conflict detected. Semester dates must be unique.",
+        }); // Descriptive error message
+    }
+
+    await semester.save();
+    res.json(semester);
+  } catch (error) {
+    if (error.code === 11000) {
+      // Handle Mongoose duplicate key error specifically
+      return res.status(400).json({ message: "Academic year must be unique" });
+    } else {
+      console.error(error.message);
+      res.status(500).json({ message: "Error creating semester" });
+    }
+  }
+};
+
+const updateSemester = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const semester = await Semester.findById(id);
+    
+    if (!semester) {
+      return res.status(404).json({ message: "Semester not found" });
+    }
+    semester.start_date = req.body.start_date;
+    semester.final_closure_date = req.body.final_closure_date;
+    semester.academic_year = req.body.academic_year;
+    const overlappingSemesters = await Semester.find({
+      $or: [
+        {
+          start_date: {
+            $gte: semester.start_date,
+            $lt: semester.final_closure_date,
+          },
+        },
+        {
+          final_closure_date: {
+            $gt: semester.start_date,
+            $lte: semester.final_closure_date,
+          },
+        },
+      ],
+    });
+    if (overlappingSemesters.length > 0) {
+      return res
+        .status(400)
+        .json({
+          message: "Time conflict detected. Semester dates must be unique.",
+        }); // Descriptive error message
+    }
+    
+    semester.save();
+    res.json(semester);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: "Error updating semester" });
+  }
+};
+
+const deleteSemester = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await Semester.findByIdAndRemove(id);
+    res.json({ message: "Semester deleted" });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: "Error deleting semester" });
+  }
+};
+
+module.exports = {
+  createSemester,
+  getSemesters,
+  updateSemester,
+  deleteSemester,
+};

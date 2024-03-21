@@ -14,8 +14,6 @@ router.post('/',authorization.authorizeRole(['student']), submissionController.c
 // Get submissions
 router.get('/:id',authorization.authorizeRole(['student','manager','coordinator']),submissionMiddleware,submissionController.getSubmissionsById);
 
-//Read documnent in submission
-router.get('/document/',authorization.authorizeRole(['student']), submissionController.readDocxFile);
 //Get list of subbmissions
 router.get('/list/data',authorization.authorizeRole(['manager','coordinator','student']), submissionController.getSubmissionsByRole);
 //Edit submission
@@ -28,5 +26,5 @@ router.put('/comment/:id',authorization.authorizeRole(['coordinator']),submissio
 router.delete('/:id',authorization.authorizeRole(['coordinator']),submissionMiddleware, submissionController.deleteSubmission);
 
 //Download selected submission
-router.get('manager/download', authorization.authorizeRole(['manager']), zipDownload);
+router.get('/manager/download', authorization.authorizeRole(['manager']), zipDownload);
 module.exports = router;
