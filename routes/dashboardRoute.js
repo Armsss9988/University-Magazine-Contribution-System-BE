@@ -9,5 +9,7 @@ router.use(authorization.authorizeRole(['manager']));
 router.get('/submissions/', dashboardController.getFacultySubmissionsPerSemester);
 router.get('/contributors/', dashboardController.contributorsEachFacultyEachSemester);
 router.get('/percentage/', dashboardController.percentageOfContributionsByFaculty);
+router.get('/uncommented/', dashboardController.submissionWithoutComment);
+router.get('/uncommented14/', dashboardController.submissionWithoutCommentafter14days);
 
 module.exports = router;

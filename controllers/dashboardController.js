@@ -3,6 +3,7 @@ const Entry = require("../models/entryModel");
 const User = require("../models/userModel");
 const Semester = require("../models/semesterModel");
 const Faculty = require("../models/facultyModel");
+const localTime = require("../services/getLocalTime");
 
 const contributorsEachFacultyEachSemester = async (req, res) => {
   try {
@@ -129,14 +130,18 @@ const percentageOfContributionsByFaculty = async (req, res) => {
   try {
     const semester = await Semester.findById(req.query.semesterId);
     if (!semester) {
-      console.log('Semester not found.');
+      console.log("Semester not found.");
       return;
     }
-    const entries = await Entry.find({semester: semester}).populate("faculty");
+    const entries = await Entry.find({ semester: semester }).populate(
+      "faculty"
+    );
 
     // Get all submissions for the specified semester
-    const submissions = await Submission.find({ entry: {$in: entries}}).populate('entry');
-    console.log({submissions});
+    const submissions = await Submission.find({
+      entry: { $in: entries },
+    }).populate("entry");
+    console.log({ submissions });
 
     // Initialize an object to store faculty submissions
     const facultySubmissions = {};
@@ -162,14 +167,36 @@ const percentageOfContributionsByFaculty = async (req, res) => {
     }
 
     // Print or return the results
-    console.log('Percentage of submissions by each faculty:');
+    console.log("Percentage of submissions by each faculty:");
     for (const facultyName in percentageSubmissions) {
       console.log(`${facultyName}: ${percentageSubmissions[facultyName]}%`);
     }
-  
-    res.json({percentageSubmissions});
+
+    res.json({ percentageSubmissions });
   } catch (error) {
     console.error(error);
+  }
+};
+
+const submissionWithoutComment = async (req, res) => {
+  try {
+    const submissions = await Submission.find({ comment: null });
+    res.json({ submissions });
+  } catch (error) {
+    console.log(error);
+  }
+};
+const submissionWithoutCommentafter14days = async (req, res) => {
+  try {
+    const currentDate = localTime.getDateNow();
+    const fourteenDaysAgo = new Date();
+    fourteenDaysAgo.setTime(currentDate - 14 * 24 * 60 * 60 * 1000);
+    const submissions = await Submission.find({
+      created_at: { $lt: fourteenDaysAgo }, comment: null
+    });
+    res.json(submissions);
+  } catch (error) {
+    console.log(error);
   }
 };
 
@@ -177,4 +204,6 @@ module.exports = {
   contributorsEachFacultyEachSemester,
   getFacultySubmissionsPerSemester,
   percentageOfContributionsByFaculty,
+  submissionWithoutCommentafter14days,
+  submissionWithoutComment
 };
