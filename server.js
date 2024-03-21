@@ -9,6 +9,7 @@ const facultyRouter = require('./routes/facultyRoute');
 const submissionRouter = require('./routes/submissionRoute');
 const entryRouter = require('./routes/entryRoute');
 const semesterRouter = require('./routes/semesterRoute');
+const dashboardRouter = require('./routes/dashboardRoute');
 const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload');
 const cronSchedule = require('./services/checkTime');
@@ -35,6 +36,7 @@ app.use('/api/submission', submissionRouter);
 app.use('/api/faculty', facultyRouter);
 app.use('/api/entry', entryRouter);
 app.use('/api/semester', semesterRouter);
+app.use('/api/dashboard', dashboardRouter);
 
 dbConnection();
 app.listen(8000, () => {
