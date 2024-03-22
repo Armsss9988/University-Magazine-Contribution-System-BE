@@ -1,7 +1,7 @@
 const Faculty = require('../models/facultyModel');
 const User = require('../models/userModel'); // Import user model
 const jwt = require('jsonwebtoken');
-
+const BlacklistedToken = require('../models/blackListedTokenModel');
 
 const checkSignup = async (req, res) => {
     try {
@@ -59,5 +59,22 @@ const checkSignup = async (req, res) => {
       res.status(500).json({ message: 'Error logging in' });
     }
   };
+  const checkLogout = async (req,res) => {
+    try {
+      const token = req.cookies.token; // Assuming token is stored in a cookie
+  
+      // Add token to blacklist
+      const blacklistedToken = new BlacklistedToken({ token });
+      await blacklistedToken.save();
+  
+      // Optionally clear client-side cookie
+      res.clearCookie('token');
+  
+      res.status(200).json({ message: 'Successfully logged out' });
+    } catch (error) {
+      console.error('Logout error:', error);
+      res.status(500).json({ message: 'Logout failed' });
+    }
+  }
 
-  module.exports = { checkLogin, checkSignup};
+  module.exports = { checkLogin, checkSignup, checkLogout};

@@ -10,6 +10,7 @@ router.use(authorization.verifyToken);
 
 router.get("/list/faculty",authorization.authorizeRole(["coordinator"]), userController.getUsersByFaculty);
 router.get("/profile", userController.getProfile);
+router.post("/logout", authentication.checkLogout);
 
 router.use(authorization.authorizeRole(["admin"]));
 
