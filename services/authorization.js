@@ -1,7 +1,5 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
-const Faculty = require('../models/facultyModel');
-const Submission = require('../models/submissionModel');
 
 const verifyToken = (req, res, next) => {
   try 
@@ -12,8 +10,8 @@ const verifyToken = (req, res, next) => {
 
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
       if (err) return res.status(401).json({ message: 'Invalid token' });
-      req.user = decoded.user;
-      console.log("decoded: " + JSON.stringify(decoded.user));
+      req.user = decoded;
+      console.log("decoded: " + decoded);
       next();   
     });
   }
@@ -23,8 +21,8 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-const authorizeRole = (roles) => (req, res, next) => {
-  const user = req.user;
+const authorizeRole = (roles) => async (req, res, next) => {
+  const user = await User.findById(req.user.id);
   if (!user) {
     return res.status(401).json({ message: "Unauthorized" });
   }

@@ -32,8 +32,13 @@ try {
       for (const document of document_pathArr) {    
         const filePath = `${rootDir}/uploads/${document}`;
         console.log(filePath);
-        const fileBuffer = await fs.readFile(filePath);
-        await archive.file(filePath, { name: document });
+        try {
+          const fileBuffer = await fs.readFile(filePath);
+          await archive.file(filePath, { name: document });
+        } catch (error) {
+          console.error(`Error reading file: ${filePath}`, error);
+          // Handle the error gracefully, e.g., log and continue
+        }
       };
     }
 

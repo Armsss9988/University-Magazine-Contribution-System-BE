@@ -3,15 +3,13 @@ const Faculty = require("../models/facultyModel");
 const Semester = require("../models/semesterModel");
 
 const entryController = {
-  // READ (với phân quyền)
+
   async getEntries(req, res) {
-    const { role, facultyId } = req.user;
-    const filter = role === "faculty" ? { faculty_id: facultyId } : {};
-    const entries = await Entry.find(filter);
+    const entries = await Entry.find();
     res.json(entries);
   },
 
-  // CREATE (chưa có phân quyền cụ thể)
+
   async createEntry(req, res) {
     try {
       const faculty = await Faculty.findById(req.body.faculty);
@@ -28,6 +26,9 @@ const entryController = {
       }
       
       const entry = new Entry(req.body);
+      if(semester.start_date > entry.start_date){
+        return res.json({message: "Start date must be after start date of this semester"});
+      }
       if(semester.final_closure_date < entry.end_date){
         return res.json({message: "End date is over time for this semester"});
       }
@@ -40,7 +41,7 @@ const entryController = {
             },
           },
           {
-            final_closure_date: {
+            end_date: {
               $gt: entry.start_date,
               $lte: entry.end_date,
             },
@@ -81,6 +82,9 @@ const entryController = {
       const entry = await Entry.findById(req.param.id);
       entry.start_date = req.body.start_date;
       entry.end_date = req.body.end_date;
+      if(semester.start_date > entry.start_date){
+        return res.json({message: "Start date must be after start date of this semester"});
+      }
       if(semester.final_closure_date < entry.end_date){
         return res.json({message: "End date is over time for this semester"});
       }
@@ -93,7 +97,7 @@ const entryController = {
             },
           },
           {
-            final_closure_date: {
+            end_date: {
               $gt: entry.start_date,
               $lte: entry.end_date,
             },

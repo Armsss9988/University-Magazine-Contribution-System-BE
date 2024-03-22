@@ -3,7 +3,7 @@ const Faculty = require('../models/facultyModel');
 const Submission = require('../models/submissionModel');
 
 const checkRBAC = async (req, res, next) =>{
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user.id);
     if(!user){
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -22,7 +22,7 @@ const checkRBAC = async (req, res, next) =>{
 const checkSubmissionFaculty  = async (req, res) => {
   try {
     console.log("Checking faculty of submission!")
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -48,7 +48,7 @@ const checkSubmissionFaculty  = async (req, res) => {
   }
   };
   const checkSubmissionUser  = async (req, res) => {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user.id);
     console.log("Checking user of submission!");
     const submission = await Submission.findById(req.params.id);
     if(!submission){
@@ -74,4 +74,4 @@ const checkSubmissionFaculty  = async (req, res) => {
     console.log("Done check status of submission!");
   }
  
-  module.exports = checkRBAC;
+  module.exports = {checkRBAC, checkSelectedSubmission};

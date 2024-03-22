@@ -6,7 +6,7 @@ const User = require('../models/userModel');
 // Get user profile (protected route)
 const getProfile = async (req, res) => {
   try {
-    const user = req.user;
+    const user = await User.findById(req.user.id)
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -29,12 +29,12 @@ const getUsers = async (req, res) => {
 };
 const getUsersByFaculty = async (req, res) => {
   try {
-    const { faculty } = req.user.faculty; // Get faculty ID from query parameter
-
+    const user = await User.findById(req.user.id)
+    const faculty = user.faculty;
     // Filter based on faculty ID and role (optional)
     let filter = {};
     if (faculty) {
-      filter = req.user.role === 'coordinator' ? { faculty } : { faculty, role: 'student' }; // Allow admin to see all users of a faculty, student to see only their own
+      filter = user.role === 'coordinator' ? { faculty } : { faculty, role: 'student' }; // Allow admin to see all users of a faculty, student to see only their own
     }
 
     const users = await User.find(filter);
