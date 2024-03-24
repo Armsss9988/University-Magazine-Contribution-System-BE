@@ -75,13 +75,13 @@ exports.createSubmission = async (req, res) => {
     console.log("Word file: " + docxFiles);
     const duplicate = new Set(uploadedFiles.map((item) => item.name));
     if (uploadedFiles.length - duplicate.size > 0) {
-      return res.status(400).json({ error: "Duplicated file name." });
+      return res.status(400).json({ message: "Duplicated file name." });
     }
     // Validate docx file count
     if (docxFiles.length != 1) {
       return res
         .status(400)
-        .json({ error: "One and only word file is allowed." });
+        .json({ message: "One and only word file is allowed." });
     }
     const errorLog = [];
     for (const uploadedFile of uploadedFiles) {
@@ -111,7 +111,7 @@ exports.createSubmission = async (req, res) => {
       role: "coordinator",
     });
     res.status(201).json(submission);
-    try {
+    try { 
       if (!submission) {
         return res.status(404).json({ message: "Article not found" });
       }
@@ -129,15 +129,14 @@ exports.createSubmission = async (req, res) => {
       res
         .status(200)
         .json({
-          message: "Submission created success!!",
-          message: "Email sent successfully",
+          message: "Submission created success!!"
         });
     } catch (error) {
       console.error("Error sending email:", error);
       res.status(500).json({ message: "Error sending email" });
     }
   } catch (error) {
-    res.status(500).json({ error: "Error creating submission" });
+    res.status(500).json({ message: "Error creating submission" });
   }
 };
 
@@ -153,7 +152,7 @@ exports.getSubmissionsByRole = async (req, res) => {
       this.getSubmissionsByUser(req, res);
     }
   } catch (error) {
-    res.status(500).json({ error: "Error fetching submissions" });
+    res.status(500).json({ message: "Error fetching submissions" });
   }
 };
 // Get all submissions
@@ -162,7 +161,7 @@ exports.getAllSelectedSubmissions = async (req, res) => {
     const submissions = await Submission.find({ status: "selected" });
     res.json(submissions);
   } catch (error) {
-    res.status(500).json({ error: "Error fetching submissions" });
+    res.status(500).json({ message: "Error fetching submissions" });
   }
 };
 
@@ -181,7 +180,7 @@ exports.getSubmissionsByUser = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     const submissions = await Submission.find({ student: user });
-    res.json(submissions);
+    res.json(submissions,{message: "Get submission successfully!"});
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Error getting submissions" });
@@ -206,7 +205,7 @@ exports.getSubmissionsById = async (req, res) => {
           console.error("Error reading file:", error);
         });
     }
-    res.json({ submissions, files });
+    res.json( submissions, files, {message: "Get item successfully!"} );
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Error getting submissions" });
@@ -264,7 +263,7 @@ exports.editSubmission = async (req, res) => {
 
     if (invalidFiles.length > 0) {
       return res.status(400).json({
-        error: `Files have invalid extensions. Allowed extensions are: ${allowedExtensions.join(
+        message: `Files have invalid extensions. Allowed extensions are: ${allowedExtensions.join(
           ", "
         )}`,
       });
@@ -279,13 +278,13 @@ exports.editSubmission = async (req, res) => {
     console.log("Word file: " + docxFiles);
     const duplicate = new Set(uploadedFiles.map((item) => item.name));
     if (uploadedFiles.length - duplicate.size > 0) {
-      return res.status(400).json({ error: "Duplicated file name." });
+      return res.status(400).json({ message: "Duplicated file name." });
     }
     // Validate docx file count
     if (docxFiles.length != 1) {
       return res
         .status(400)
-        .json({ error: "One and only word file is allowed." });
+        .json({ message: "One and only word file is allowed." });
     }
     const errorLog = [];
     for (const uploadedFile of uploadedFiles) {
@@ -317,7 +316,7 @@ exports.editSubmission = async (req, res) => {
     await submission.save();
     res.json({ message: "Submission edited success!!", errorLog });
   } catch (error) {
-    res.status(500).json({ error: "Error creating submission" });
+    res.status(500).json({ message: "Error creating submission" });
   }
 };
 
@@ -371,7 +370,7 @@ exports.updateSubmission = async (req, res) => {
 
     if (invalidFiles.length > 0) {
       return res.status(400).json({
-        error: `Files have invalid extensions. Allowed extensions are: ${allowedExtensions.join(
+        message: `Files have invalid extensions. Allowed extensions are: ${allowedExtensions.join(
           ", "
         )}`,
       });
@@ -380,7 +379,7 @@ exports.updateSubmission = async (req, res) => {
     console.log("Document Path: " + submission.document_path);
     const duplicate = new Set(uploadedFiles.map((item) => item.name));
     if (uploadedFiles.length - duplicate.size > 0) {
-      return res.status(400).json({ error: "Duplicated file name." });
+      return res.status(400).json({ message: "Duplicated file name." });
     }
 
     const errorLog = [];
@@ -407,9 +406,9 @@ exports.updateSubmission = async (req, res) => {
     submission.title = title;
     submission.updated_at = getLocalTime.getDateNow();
     submission.save();
-    res.json(submission);
+    res.json({message: "Submission Update successfully!"});
   } catch (error) {
-    res.status(500).json({ error: "Error updating submission" });
+    res.status(500).json({ message: "Error updating submission" });
   }
 };
 
@@ -444,9 +443,9 @@ exports.updateComment = async (req, res) => {
       title,
       updatedSubmission.comment_content
     );
-    res.json(updatedSubmission);
+    res.json({message: "Comment successfully!"});
   } catch (error) {
-    res.status(500).json({ error: "Error comment submission" });
+    res.status(500).json({ message: "Error comment submission" });
   }
 };
 
@@ -456,6 +455,6 @@ exports.deleteSubmission = async (req, res) => {
     await Submission.findByIdAndDelete(req.params.id);
     res.json({ message: "Submission deleted successfully" });
   } catch (error) {
-    res.status(500).json({ error: "Error deleting submission" });
+    res.status(500).json({ message: "Error deleting submission" });
   }
 };

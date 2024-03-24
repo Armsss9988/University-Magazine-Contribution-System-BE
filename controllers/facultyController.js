@@ -9,7 +9,7 @@ const createFaculty = async (req, res) => {
     const newFaculty = new Faculty( {name} );     
     await newFaculty.save();
 
-    res.json({ message: 'Faculty created successfully', faculty: newFaculty });
+    res.json({ message: 'Faculty created successfully' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error creating faculty' });
@@ -19,7 +19,7 @@ const createFaculty = async (req, res) => {
 const getFaculties = async (req, res) => {
   try {
     const faculties = await Faculty.find();
-    res.json({ faculties });
+    res.json(faculties);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error getting faculties' });
@@ -32,7 +32,7 @@ const getFacultyById = async (req, res) => {
     if (!faculty) {
       return res.status(404).json({ message: 'Faculty not found' });
     }
-    res.json({ faculty });
+    res.json(faculty);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error getting faculty' });

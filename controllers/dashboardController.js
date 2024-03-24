@@ -121,17 +121,18 @@ const getFacultySubmissionsPerSemester = async (req, res) => {
       semester: result.semester,
       count: result.count,
     }));
-    res.json({ submissionsByFacultySemester });
+    res.json(submissionsByFacultySemester);
   } catch (error) {
     console.error(error);
   }
 };
 const percentageOfContributionsByFaculty = async (req, res) => {
   try {
-    const semester = await Semester.findById(req.query.semesterId);
+    const semester = await Semester.findById(req.params.id);
+    console.log(semester.academic_year);
     if (!semester) {
       console.log("Semester not found.");
-      return;
+      return res.status(500).json({ message: "Semester not found." });
     }
     const entries = await Entry.find({ semester: semester }).populate(
       "faculty"
@@ -159,29 +160,23 @@ const percentageOfContributionsByFaculty = async (req, res) => {
     const totalSubmissions = submissions.length;
 
     // Calculate percentage submissions
-    const percentageSubmissions = {};
-    for (const facultyName in facultySubmissions) {
-      const submissionsCount = facultySubmissions[facultyName];
+    const percentageSubmissions = [];
+    for (const faculty in facultySubmissions) {
+      const submissionsCount = facultySubmissions[faculty];
       const percentage = (submissionsCount / totalSubmissions) * 100;
-      percentageSubmissions[facultyName] = percentage.toFixed(2); // Round to 2 decimal places
+      percentageSubmissions.push({'faculty':faculty, 'percentage': percentage.toFixed(2)}); // Round to 2 decimal places
     }
-
-    // Print or return the results
-    console.log("Percentage of submissions by each faculty:");
-    for (const facultyName in percentageSubmissions) {
-      console.log(`${facultyName}: ${percentageSubmissions[facultyName]}%`);
-    }
-
-    res.json({ percentageSubmissions });
+    res.json(percentageSubmissions);
   } catch (error) {
     console.error(error);
+    res.status(500).json({ message: "Error get percentage" });
   }
 };
 
 const submissionWithoutComment = async (req, res) => {
   try {
     const submissions = await Submission.find({ comment: null });
-    res.json({ submissions });
+    res.json(submissions);
   } catch (error) {
     console.log(error);
   }

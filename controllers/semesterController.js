@@ -27,6 +27,22 @@ const createSemester = async (req, res) => {
             $lte: semester.final_closure_date,
           },
         },
+        {
+          $and: [
+            {
+              start_date: {
+                $lt: semester.start_date,
+                $lt: semester.final_closure_date,
+              },
+            },
+            {
+              final_closure_date: {
+                $gte: semester.start_date,
+                $gte: semester.final_closure_date,
+              },
+            },
+          ]
+        }
       ],
     });
     if (overlappingSemesters.length > 0) {

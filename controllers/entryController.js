@@ -57,7 +57,7 @@ const entryController = {
       }
       
       await entry.save();
-      res.json(entry);
+      res.json({message: "Create successfully"});
     } catch (error) {
       console.log(error);
       return res.json({ message: "Error create" });
@@ -102,6 +102,22 @@ const entryController = {
               $lte: entry.end_date,
             },
           },
+          {
+            $and: [
+              {
+                start_date: {
+                  $lt: entry.start_date,
+                  $lt: entry.end_date,
+                },
+              },
+              {
+                final_closure_date: {
+                  $gte: entry.start_date,
+                  $gte: entry.end_date,
+                },
+              },
+            ]
+          }
         ],
       });
       if (overlappingEntries.length > 0) {
@@ -112,7 +128,7 @@ const entryController = {
           }); // Descriptive error message
       }
 
-      res.json(entry);
+      res.json({ message: "Update successfully"});
     } catch (error) {
       console.log(error);
       return res.json({ message: "Error update" });
