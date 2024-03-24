@@ -8,7 +8,18 @@ const entryController = {
     const entries = await Entry.find();
     res.json(entries);
   },
-
+  async getEntryById(req, res) { 
+    try {
+      const entry = await Entry.findById(req.params.id);
+      if (!entry) {
+        return res.status(404).json({ message: 'entry not found' });
+      }
+      res.json(entry);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Error getting entry' });
+    }
+  },
 
   async createEntry(req, res) {
     try {

@@ -9,6 +9,18 @@ const getSemesters = async (req, res) => {
     return res.status(500).json({ message: "Error retrieving semesters" }); // Informative error message
   }
 };
+const getSemesterById = async (req, res) => {
+  try {
+    const semester = await Semester.findById(req.params.id);
+    if (!semester) {
+      return res.status(404).json({ message: 'semester not found' });
+    }
+    res.json(semester);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error getting semester' });
+  }
+};
 
 const createSemester = async (req, res) => {
   try {
@@ -127,4 +139,5 @@ module.exports = {
   getSemesters,
   updateSemester,
   deleteSemester,
+  getSemesterById
 };

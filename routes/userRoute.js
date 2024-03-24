@@ -5,6 +5,8 @@ const authentication = require("../services/authentication");
 const router = express.Router();
 
 router.post("/login", authentication.checkLogin);
+router.get("/:id", userController.getUserByID);
+router.get("/list/all", userController.getUsers);
 
 router.use(authorization.verifyToken);
 
@@ -13,8 +15,6 @@ router.get("/profile", userController.getProfile);
 router.post("/logout", authentication.checkLogout);
 
 router.use(authorization.authorizeRole(["admin"]));
-
-router.get("/list/all", userController.getUsers);
 router.post("/signup", authentication.checkSignup);
 router.delete("/delete/:id", userController.deleteUser);
 

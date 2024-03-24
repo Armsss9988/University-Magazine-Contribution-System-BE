@@ -4,6 +4,8 @@ const router = express.Router();
 const authorization = require('../services/authorization');
 
 router.get('/',  entryController.getEntries);
+router.get('/:id', entryController.getEntryById);
+
 router.use(authorization.verifyToken);
 router.use(authorization.authorizeRole(['manager']));
 

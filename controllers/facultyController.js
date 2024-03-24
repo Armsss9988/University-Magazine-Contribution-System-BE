@@ -54,7 +54,7 @@ const updateFaculty = async (req, res) => {
     if (!updatedFaculty) {
       return res.status(404).json({ message: 'Faculty not found' });
     }
-    res.json({ message: 'Faculty updated successfully', faculty: updatedFaculty });
+    res.json({ message: 'Faculty updated successfully' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error updating faculty' });
@@ -67,7 +67,7 @@ const deleteFaculty = async (req, res) => {
     if (!faculty) {
       return res.status(404).json({ message: 'Faculty not found' });
     }
-    res.json({ message: 'Faculty deleted successfully', faculty });
+    res.json({ message: 'Faculty deleted successfully'});
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error deleting faculty' });

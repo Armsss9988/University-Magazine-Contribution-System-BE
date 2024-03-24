@@ -110,7 +110,6 @@ exports.createSubmission = async (req, res) => {
       faculty: user.faculty,
       role: "coordinator",
     });
-    res.status(201).json(submission);
     try { 
       if (!submission) {
         return res.status(404).json({ message: "Article not found" });
@@ -180,7 +179,7 @@ exports.getSubmissionsByUser = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     const submissions = await Submission.find({ student: user });
-    res.json(submissions,{message: "Get submission successfully!"});
+    res.json(submissions);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Error getting submissions" });
@@ -205,7 +204,7 @@ exports.getSubmissionsById = async (req, res) => {
           console.error("Error reading file:", error);
         });
     }
-    res.json( submissions, files, {message: "Get item successfully!"} );
+    res.json({submissions, files, message: "Get item successfully!"});
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Error getting submissions" });

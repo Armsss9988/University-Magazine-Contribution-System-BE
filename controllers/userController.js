@@ -2,8 +2,20 @@
 const User = require('../models/userModel'); 
 
 
+const getUserByID = async (req,res) => {
+  try {
+    const user = await User.findById(req.params.id)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
-// Get user profile (protected route)
+    // Return only necessary user data (exclude password etc.)
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error getting user profile' });
+  }
+};
 const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id)
@@ -12,7 +24,7 @@ const getProfile = async (req, res) => {
     }
 
     // Return only necessary user data (exclude password etc.)
-    res.json({ user: { username: user.username, email: user.email, role: user.role, faculty: user.faculty } });
+    res.json(user);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error getting user profile' });
@@ -21,7 +33,7 @@ const getProfile = async (req, res) => {
 const getUsers = async (req, res) => {
   try {
     const users = await User.find();
-    res.json({ users });
+    res.json(users);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error getting users' });
@@ -57,4 +69,4 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { getProfile, getUsers, getUsersByFaculty, deleteUser};
+module.exports = { getProfile, getUsers, getUsersByFaculty, deleteUser , getUserByID};
