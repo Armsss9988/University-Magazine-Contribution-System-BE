@@ -25,39 +25,27 @@ const getSemesterById = async (req, res) => {
 const createSemester = async (req, res) => {
   try {
     const semester = new Semester(req.body);
-    const overlappingSemesters = await Semester.find({
-      $or: [
-        {
-          start_date: {
-            $gte: semester.start_date,
-            $lt: semester.final_closure_date,
-          },
-        },
-        {
-          final_closure_date: {
-            $gt: semester.start_date,
-            $lte: semester.final_closure_date,
-          },
-        },
-        {
-          $and: [
-            {
-              start_date: {
-                $lt: semester.start_date,
-                $lt: semester.final_closure_date,
-              },
+    const existingSemester = await Semester.aggregate([
+      {
+        $match: {
+          $or: [
+            { // Entry starts before new entry ends and ends after new entry starts
+              $and: [
+                { start_date: { $lt: semester.final_closure_date } },
+                { final_closure_date: { $gt: semester.start_date } },
+              ],
             },
-            {
-              final_closure_date: {
-                $gte: semester.start_date,
-                $gte: semester.final_closure_date,
-              },
+            { // New entry starts before existing entry ends and ends after existing entry starts
+              $and: [
+                { start_date: { $lt: semester.start_date } },
+                { final_closure_date: { $gt: semester.final_closure_date } },
+              ],
             },
-          ]
-        }
-      ],
-    });
-    if (overlappingSemesters.length > 0) {
+          ],
+        },
+      },
+    ]);
+    if (existingSemester.length > 0) {
       return res
         .status(400)
         .json({
@@ -90,23 +78,27 @@ const updateSemester = async (req, res) => {
     semester.start_date = req.body.start_date;
     semester.final_closure_date = req.body.final_closure_date;
     semester.academic_year = req.body.academic_year;
-    const overlappingSemesters = await Semester.find({
-      $or: [
-        {
-          start_date: {
-            $gte: semester.start_date,
-            $lt: semester.final_closure_date,
-          },
+    const existingSemester = await Semester.aggregate([
+      {
+        $match: {
+          $or: [
+            { // Entry starts before new entry ends and ends after new entry starts
+              $and: [
+                { start_date: { $lt: semester.final_closure_date } },
+                { final_closure_date: { $gt: semester.start_date } },
+              ],
+            },
+            { // New entry starts before existing entry ends and ends after existing entry starts
+              $and: [
+                { start_date: { $lt: semester.start_date } },
+                { final_closure_date: { $gt: semester.final_closure_date } },
+              ],
+            },
+          ],
         },
-        {
-          final_closure_date: {
-            $gt: semester.start_date,
-            $lte: semester.final_closure_date,
-          },
-        },
-      ],
-    });
-    if (overlappingSemesters.length > 0) {
+      },
+    ]);
+    if (existingSemester.length > 0) {
       return res
         .status(400)
         .json({

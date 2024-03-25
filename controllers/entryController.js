@@ -43,23 +43,27 @@ const entryController = {
       if(semester.final_closure_date < entry.end_date){
         return res.json({message: "End date is over time for this semester"});
       }
-      const overlappingEntries = await Entry.find({
-        $or: [
-          {
-            start_date: {
-              $gte: entry.start_date,
-              $lt: entry.end_date,
-            },
+      const existingEntries = await Entry.aggregate([
+        {
+          $match: {
+            $or: [
+              { // Entry starts before new entry ends and ends after new entry starts
+                $and: [
+                  { start_date: { $lt: entry.end_date } },
+                  { end_date: { $gt: entry.start_date } },
+                ],
+              },
+              { // New entry starts before existing entry ends and ends after existing entry starts
+                $and: [
+                  { start_date: { $lt: entry.start_date } },
+                  { end_date: { $gt: entry.end_date } },
+                ],
+              },
+            ],
           },
-          {
-            end_date: {
-              $gt: entry.start_date,
-              $lte: entry.end_date,
-            },
-          },
-        ],
-      });
-      if (overlappingEntries.length > 0) {
+        },
+      ]);
+      if (existingEntries.length > 0) {
         return res
           .status(400)
           .json({
@@ -99,39 +103,27 @@ const entryController = {
       if(semester.final_closure_date < entry.end_date){
         return res.json({message: "End date is over time for this semester"});
       }
-      const overlappingEntries = await Entry.find({
-        $or: [
-          {
-            start_date: {
-              $gte: entry.start_date,
-              $lt: entry.end_date,
-            },
-          },
-          {
-            end_date: {
-              $gt: entry.start_date,
-              $lte: entry.end_date,
-            },
-          },
-          {
-            $and: [
-              {
-                start_date: {
-                  $lt: entry.start_date,
-                  $lt: entry.end_date,
-                },
+      const existingEntries = await Entry.aggregate([
+        {
+          $match: {
+            $or: [
+              { // Entry starts before new entry ends and ends after new entry starts
+                $and: [
+                  { start_date: { $lt: entry.end_date } },
+                  { end_date: { $gt: entry.start_date } },
+                ],
               },
-              {
-                final_closure_date: {
-                  $gte: entry.start_date,
-                  $gte: entry.end_date,
-                },
+              { // New entry starts before existing entry ends and ends after existing entry starts
+                $and: [
+                  { start_date: { $lt: entry.start_date } },
+                  { end_date: { $gt: entry.end_date } },
+                ],
               },
-            ]
-          }
-        ],
-      });
-      if (overlappingEntries.length > 0) {
+            ],
+          },
+        },
+      ]);
+      if (existingEntries.length > 0) {
         return res
           .status(400)
           .json({

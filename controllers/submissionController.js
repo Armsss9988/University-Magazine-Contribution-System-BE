@@ -188,31 +188,55 @@ exports.getSubmissionsByUser = async (req, res) => {
 
 exports.getSubmissionsById = async (req, res) => {
   try {
-    const submissions = await Submission.findById(req.params.id);
-    document_pathArr = submissions.document_path.split(",");
-    console.log({ document_pathArr });
-    const files = [];
-    for (const document of document_pathArr) {
-      const filePath = `${rootDir}/uploads/${document}`;
-      console.log(filePath);
-      const fileBuffer = await fs
-        .readFile(filePath)
-        .then((data) => {
-          files.push(fileBuffer);
-        })
-        .catch((error) => {
-          console.error("Error reading file:", error);
-        });
-    }
-    res.json({submissions, files, message: "Get item successfully!"});
+    const id = req.params.id;
+    const submission = await Submission.findById(id);
+    const documentPaths = submission.document_path.split(",");
+
+    const files = await Promise.all(
+      documentPaths.map(async (documentPath) => {
+        const filePath = `${rootDir}/uploads/${documentPath}`;
+        try {
+          const fileBuffer = await fs.readFile(filePath);
+          const stats = await fs.stat(filePath);
+          const fileType = getFileType(filePath); // Function to determine file type
+          return {
+            name: documentPath.substring((id.length)*2),
+            type: fileType,
+            data: Buffer.from(fileBuffer),
+            size: stats.size // Base64 encode file buffer
+          };
+        } catch (error) {
+          console.error(`Error reading file: ${filePath}`, error);
+          // Optionally log specific error details or omit the file from response
+          return null;
+        }
+      })
+    );
+
+    const filteredFiles = files.filter(file => file !== null); // Remove null entries
+
+    res.json({ submission, files: filteredFiles, message: "Get item successfully!" });
   } catch (err) {
-    console.error(err);
+    console.error("Error getting submissions:", err);
     res.status(500).json({ message: "Error getting submissions" });
   }
 };
+function getFileType(filePath) {
+  const extension = path.extname(filePath).toLowerCase();
+  const mimeTypes = {
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.png': 'image/png',
+    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    '.doc': 'application/msword',
+    // Add more mime types as needed
+  };
+  return mimeTypes[extension];
+}
 
 exports.editSubmission = async (req, res) => {
   try {
+    console.log("File: " + req.files.File);
     const submission = await Submission.findById(req.params.id);
     const student = await User.findById(submission.student);
     const entry = await Entry.findById(submission.entry);
@@ -246,13 +270,13 @@ exports.editSubmission = async (req, res) => {
       // Single file uploaded
 
       var uploadedFiles = [Files];
-      console.log("Upload File: " + uploadedFiles);
+      console.log("Upload File: " + uploadedFiles.map(file => file.name));
     } else {
       var uploadedFiles = Files;
-      console.log("Upload File: " + uploadedFiles);
+      console.log("Upload File: " + uploadedFiles.map(file => file.name));
     }
     
-    const fileNames = [];
+    
     // Validate file extensions
     const allowedExtensions = [".jpg", ".jpeg", ".png", ".docx", ".doc"];
     const invalidFiles = uploadedFiles.filter((file) => {
@@ -286,7 +310,9 @@ exports.editSubmission = async (req, res) => {
         .json({ message: "One and only word file is allowed." });
     }
     const errorLog = [];
+    const fileNames = [];
     for (const uploadedFile of uploadedFiles) {
+      console.log("File: " + uploadedFile.name);
       const fileName = `${submission._id}${student._id}${uploadedFile.name}`;
       // Validate file extensions and handle each file
       const filePath = path.join(__dirname, "..", "./uploads/", fileName);
@@ -310,6 +336,7 @@ exports.editSubmission = async (req, res) => {
     else {
       submission.document_path = fileNames.toString();
     }
+    console.log("last path: " + submission.document_path);
     submission.title = title;
     submission.updated_at = getLocalTime.getDateNow();
     await submission.save();
