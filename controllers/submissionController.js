@@ -8,7 +8,8 @@ const fs = require("fs").promises;
 const rootDir = path.resolve(__dirname, "..");
 const emailService = require("../services/sendEmail");
 const getLocalTime = require("../services/getLocalTime");
-const sendEmail = require('../services/sendEmail');
+const sendEmail = require("../services/sendEmail");
+const archiver = require("archiver");
 
 // Create a new submission
 exports.createSubmission = async (req, res) => {
@@ -110,7 +111,7 @@ exports.createSubmission = async (req, res) => {
       faculty: user.faculty,
       role: "coordinator",
     });
-    try { 
+    try {
       if (!submission) {
         return res.status(404).json({ message: "Article not found" });
       }
@@ -125,11 +126,9 @@ exports.createSubmission = async (req, res) => {
         emailContent
       );
 
-      res
-        .status(200)
-        .json({
-          message: "Submission created success!!"
-        });
+      res.status(200).json({
+        message: "Submission created success!!",
+      });
     } catch (error) {
       console.error("Error sending email:", error);
       res.status(500).json({ message: "Error sending email" });
@@ -200,10 +199,10 @@ exports.getSubmissionsById = async (req, res) => {
           const stats = await fs.stat(filePath);
           const fileType = getFileType(filePath); // Function to determine file type
           return {
-            name: documentPath.substring((id.length)*2),
+            name: documentPath.substring(id.length * 2),
             type: fileType,
             data: Buffer.from(fileBuffer),
-            size: stats.size // Base64 encode file buffer
+            size: stats.size, // Base64 encode file buffer
           };
         } catch (error) {
           console.error(`Error reading file: ${filePath}`, error);
@@ -213,9 +212,13 @@ exports.getSubmissionsById = async (req, res) => {
       })
     );
 
-    const filteredFiles = files.filter(file => file !== null); // Remove null entries
+    const filteredFiles = files.filter((file) => file !== null); // Remove null entries
 
-    res.json({ submission, files: filteredFiles, message: "Get item successfully!" });
+    res.json({
+      submission,
+      files: filteredFiles,
+      message: "Get item successfully!",
+    });
   } catch (err) {
     console.error("Error getting submissions:", err);
     res.status(500).json({ message: "Error getting submissions" });
@@ -224,11 +227,12 @@ exports.getSubmissionsById = async (req, res) => {
 function getFileType(filePath) {
   const extension = path.extname(filePath).toLowerCase();
   const mimeTypes = {
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.png': 'image/png',
-    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    '.doc': 'application/msword',
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".docx":
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".doc": "application/msword",
     // Add more mime types as needed
   };
   return mimeTypes[extension];
@@ -240,17 +244,15 @@ exports.editSubmission = async (req, res) => {
     const submission = await Submission.findById(req.params.id);
     const student = await User.findById(submission.student);
     const entry = await Entry.findById(submission.entry);
-    if(!student){
-      return res
-        .status(400)
-        .json({ message: "student not found" });
+    if (!student) {
+      return res.status(400).json({ message: "student not found" });
     }
     if (!entry) {
       return res
         .status(400)
         .json({ message: "We dont have entry for this faculty now" });
     }
-    if(entry.closed){
+    if (entry.closed) {
       return res
         .status(400)
         .json({ message: "Entry closed, you cant edit submission anymore" });
@@ -270,13 +272,12 @@ exports.editSubmission = async (req, res) => {
       // Single file uploaded
 
       var uploadedFiles = [Files];
-      console.log("Upload File: " + uploadedFiles.map(file => file.name));
+      console.log("Upload File: " + uploadedFiles.map((file) => file.name));
     } else {
       var uploadedFiles = Files;
-      console.log("Upload File: " + uploadedFiles.map(file => file.name));
+      console.log("Upload File: " + uploadedFiles.map((file) => file.name));
     }
-    
-    
+
     // Validate file extensions
     const allowedExtensions = [".jpg", ".jpeg", ".png", ".docx", ".doc"];
     const invalidFiles = uploadedFiles.filter((file) => {
@@ -327,13 +328,11 @@ exports.editSubmission = async (req, res) => {
         // Handle errors during move process (e.g., logging or notifying admins)
       }
     }
-    if(fileNames.length < 1){
+    if (fileNames.length < 1) {
       submission.document_path = "";
-    }
-    else if (fileNames.length > 1) {
+    } else if (fileNames.length > 1) {
       submission.document_path = fileNames.join(",");
-    } 
-    else {
+    } else {
       submission.document_path = fileNames.toString();
     }
     console.log("last path: " + submission.document_path);
@@ -432,7 +431,7 @@ exports.updateSubmission = async (req, res) => {
     submission.title = title;
     submission.updated_at = getLocalTime.getDateNow();
     submission.save();
-    res.json({message: "Submission Update successfully!"});
+    res.json({ message: "Submission Update successfully!" });
   } catch (error) {
     res.status(500).json({ message: "Error updating submission" });
   }
@@ -444,15 +443,15 @@ exports.updateComment = async (req, res) => {
     const { comment_content, status } = req.body;
     console.log(comment_content);
     console.log(status);
-    if(!comment_content || !status){
-      return res.status(400).json({ message: "Missing input" }); 
+    if (!comment_content || !status) {
+      return res.status(400).json({ message: "Missing input" });
     }
     const currentTime = getLocalTime.getDateNow();
     console.log(currentTime);
     const updatedSubmission = await Submission.findByIdAndUpdate(
       req.params.id,
       {
-        status : status,
+        status: status,
         comment_content: comment_content,
         comment_at: currentTime,
       },
@@ -473,7 +472,7 @@ exports.updateComment = async (req, res) => {
       title,
       comment_content
     );
-    res.json({message: "Comment successfully!"});
+    res.json({ message: "Comment successfully!" });
   } catch (error) {
     res.status(500).json({ message: "Error comment submission" });
   }
@@ -486,5 +485,91 @@ exports.deleteSubmission = async (req, res) => {
     res.json({ message: "Submission deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error deleting submission" });
+  }
+};
+
+exports.downloadSelectedSubmissions = async (req, res) => {
+  try {
+    // Find selected contributions (replace with your actual filtering)
+    const submissions = await Submission.find({ status: "selected" });
+
+    // Check if any contributions found
+    if (submissions.length === 0) {
+      return res.status(404).send("No contributions found for selected");
+    }
+
+    // Create a ZIP archive
+    const archive = archiver("zip");
+
+    // Set content disposition for download (optional)
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=contributions.zip"
+    );
+    res.setHeader("Content-Type", "application/zip");
+
+    // Pipe the archive to the response stream
+    archive.pipe(res);
+    for (const contribution of submissions) {
+      // Replace with actual file path generation
+      document_pathArr = contribution.document_path.split(", ");
+      console.log({ document_pathArr });
+      for (const document of document_pathArr) {
+        const filePath = `${rootDir}/uploads/${document}`;
+        console.log(filePath);
+        try {
+          const fileBuffer = await fs.readFile(filePath);
+          await archive.file(filePath, { name: document });
+        } catch (error) {
+          console.error(`Error reading file: ${filePath}`, error);
+          // Handle the error gracefully, e.g., log and continue
+        }
+      }
+    }
+
+    // Finalize the archive
+    await archive.finalize();
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error downloading contributions");
+  }
+};
+
+exports.downloadCheckedSubmissions = async (req, res) => {
+  try {
+    // Create a ZIP archive
+    const archive = archiver("zip");
+
+    // Set content disposition for download (optional)
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=contributions.zip"
+    );
+    res.setHeader("Content-Type", "application/zip");
+
+    // Pipe the archive to the response stream
+    archive.pipe(res);
+    const { submissionIds } = req.body;
+    for (const submissionId of submissionIds) {
+      const submission = await Submission.findById(submissionId);
+      document_pathArr = submission.document_path.split(", ");
+      console.log({ document_pathArr });
+      for (const document of document_pathArr) {
+        const filePath = `${rootDir}/uploads/${document}`;
+        console.log(filePath);
+        try {
+          const fileBuffer = await fs.readFile(filePath);
+          await archive.file(filePath, { name: document });
+        } catch (error) {
+          console.error(`Error reading file: ${filePath}`, error);
+          // Handle the error gracefully, e.g., log and continue
+        }
+      }
+    }
+    // Finalize the archive
+    await archive.finalize();
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error downloading contributions");
   }
 };

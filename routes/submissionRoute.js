@@ -30,5 +30,6 @@ router.put('/comment/:id',authorization.authorizeRole(['coordinator']),submissio
 router.delete('/:id',authorization.authorizeRole(['coordinator']),submissionMiddleware.checkRBAC, submissionController.deleteSubmission);
 
 //Download selected submission
-router.get('/manager/download', authorization.authorizeRole(['manager']), zipDownload);
+router.post('/manager/download/selected', authorization.authorizeRole(['manager']), submissionController.downloadSelectedSubmissions);
+router.post('/manager/download/selected', authorization.authorizeRole(['manager']), submissionController.downloadCheckedSubmissions);
 module.exports = router;
