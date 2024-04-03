@@ -443,13 +443,17 @@ exports.updateComment = async (req, res) => {
     const user = await User.findById(req.user.id);
     const { comment_content, status } = req.body;
     console.log(comment_content);
+    console.log(status);
+    if(!comment_content || !status){
+      return res.status(400).json({ message: "Missing input" }); 
+    }
     const currentTime = getLocalTime.getDateNow();
     console.log(currentTime);
     const updatedSubmission = await Submission.findByIdAndUpdate(
       req.params.id,
       {
-        status,
-        comment_content,
+        status : status,
+        comment_content: comment_content,
         comment_at: currentTime,
       },
       { new: true }
@@ -467,7 +471,7 @@ exports.updateComment = async (req, res) => {
       role,
       recipientEmail,
       title,
-      updatedSubmission.comment_content
+      comment_content
     );
     res.json({message: "Comment successfully!"});
   } catch (error) {
