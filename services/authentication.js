@@ -15,7 +15,15 @@ const checkSignup = async (req, res) => {
       if (!faculty) {
         return res.status(400).json({ message: 'Invalid faculty name' });
       }
-  
+      
+
+       // If the role is 'coordinator', check if a coordinator already exists for the faculty
+    if (role === 'coordinator') {
+      const existingCoordinator = await User.findOne({ faculty: faculty._id, role });
+      if (existingCoordinator) {
+        return res.status(400).json({ message: 'A coordinator is already assigned to this faculty.' });
+      }
+    } 
       // Check for existing user with same email
       const existingUser = await User.findOne({ email });
       if (existingUser) {
