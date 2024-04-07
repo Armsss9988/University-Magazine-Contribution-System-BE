@@ -124,7 +124,7 @@ const deleteSemester = async (req, res) => {
     console.error(error.message);
     res.status(500).json({ message: "Error deleting semester" });
   }
-};
+};  
 
 module.exports = {
   createSemester,

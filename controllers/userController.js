@@ -68,5 +68,23 @@ const deleteUser = async (req, res) => {
     res.status(500).json({ message: 'Error deleting user' });
   }
 };
+const updateUser = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const user = await User.findById(id);
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    user.password = req.body.password;
+    user.faculty = req.body.faculty;
+    user.save();
+    res.json(user);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: "Error updating user" });
+  }
+};
 
 module.exports = { getProfile, getUsers, getUsersByFaculty, deleteUser , getUserByID};
