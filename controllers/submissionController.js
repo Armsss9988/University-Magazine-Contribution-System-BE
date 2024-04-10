@@ -156,12 +156,14 @@ exports.getSubmissionsByRole = async (req, res) => {
 // Get all submissions
 exports.getAllSelectedSubmissions = async (req, res) => {
   try {
+    const data = [];
     const submissions = await Submission.find({ status: "selected" });
     res.json(submissions);
   } catch (error) {
     res.status(500).json({ message: "Error fetching submissions" });
   }
 };
+
 
 exports.getSubmissionsByFaculty = async (req, res) => {
   try {

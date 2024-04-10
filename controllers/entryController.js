@@ -42,35 +42,7 @@ const entryController = {
       }
       if(semester.final_closure_date < entry.end_date){
         return res.json({message: "End date is over time for this semester"});
-      }
-      const existingEntries = await Entry.aggregate([
-        {
-          $match: {
-            $or: [
-              { // Entry starts before new entry ends and ends after new entry starts
-                $and: [
-                  { start_date: { $lt: entry.end_date } },
-                  { end_date: { $gt: entry.start_date } },
-                ],
-              },
-              { // New entry starts before existing entry ends and ends after existing entry starts
-                $and: [
-                  { start_date: { $lt: entry.start_date } },
-                  { end_date: { $gt: entry.end_date } },
-                ],
-              },
-            ],
-          },
-        },
-      ]);
-      if (existingEntries.length > 0) {
-        return res
-          .status(400)
-          .json({
-            message: "Time conflict detected. Entry dates must be unique.",
-          }); // Descriptive error message
-      }
-      
+      }     
       await entry.save();
       res.json({message: "Create successfully"});
     } catch (error) {
@@ -103,34 +75,6 @@ const entryController = {
       if(semester.final_closure_date < entry.end_date){
         return res.json({message: "End date is over time for this semester"});
       }
-      const existingEntries = await Entry.aggregate([
-        {
-          $match: {
-            $or: [
-              { // Entry starts before new entry ends and ends after new entry starts
-                $and: [
-                  { start_date: { $lt: entry.end_date } },
-                  { end_date: { $gt: entry.start_date } },
-                ],
-              },
-              { // New entry starts before existing entry ends and ends after existing entry starts
-                $and: [
-                  { start_date: { $lt: entry.start_date } },
-                  { end_date: { $gt: entry.end_date } },
-                ],
-              },
-            ],
-          },
-        },
-      ]);
-      if (existingEntries.length > 0) {
-        return res
-          .status(400)
-          .json({
-            message: "Time conflict detected. Entry dates must be unique.",
-          }); // Descriptive error message
-      }
-
       res.json({ message: "Update successfully"});
     } catch (error) {
       console.log(error);
@@ -139,7 +83,7 @@ const entryController = {
   },
 
   async deleteEntry(req, res) {
-    await Entry.findByIdAndRemove(req.params.id);
+    await Entry.findByIdAndDelete(req.params.id);
     res.json({ message: "Entry deleted" });
   },
 };

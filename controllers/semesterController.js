@@ -118,7 +118,7 @@ const deleteSemester = async (req, res) => {
   const { id } = req.params;
 
   try {
-    await Semester.findByIdAndRemove(id);
+    await Semester.findByIdAndDelete(id);
     res.json({ message: "Semester deleted" });
   } catch (error) {
     console.error(error.message);

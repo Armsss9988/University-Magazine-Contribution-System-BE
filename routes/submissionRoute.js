@@ -31,5 +31,5 @@ router.delete('/:id',authorization.authorizeRole(['coordinator']),submissionMidd
 
 //Download selected submission
 router.post('/manager/download/selected', authorization.authorizeRole(['manager']), submissionController.downloadSelectedSubmissions);
-router.post('/manager/download/selected', authorization.authorizeRole(['manager']), submissionController.downloadCheckedSubmissions);
+router.post('/manager/download/checked', authorization.authorizeRole(['manager']), submissionController.downloadCheckedSubmissions);
 module.exports = router;
