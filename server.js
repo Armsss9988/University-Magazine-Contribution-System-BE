@@ -38,6 +38,7 @@ app.use('/api/entry', entryRouter);
 app.use('/api/semester', semesterRouter);
 app.use('/api/dashboard', dashboardRouter);
 
+
 dbConnection();
 app.listen(8000, () => {
     console.log(`Server is running on port 8000.`);
