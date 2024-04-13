@@ -5,8 +5,15 @@ const Semester = require("../models/semesterModel");
 const entryController = {
 
   async getEntries(req, res) {
-    const entries = await Entry.find();
-    res.json(entries);
+    console.log("test:::", req.params.id);
+    const entries = await Entry.find({
+      faculty: req.params.id,
+      start_date: { $lte: new Date() },
+      end_date: { $gte: new Date() },
+    });
+    res.status(200).json({
+      message: entries,
+    });
   },
   async getEntryById(req, res) { 
     try {

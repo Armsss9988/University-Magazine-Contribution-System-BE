@@ -16,10 +16,10 @@ exports.createSubmission = async (req, res) => {
   try {
     console.log(req.user.id);
     const student = await User.findById(req.user.id);
-    const entry = await Entry.findOne({
-      faculty: student.faculty,
-      closed: "false",
-    });
+      const entry = await Entry.findOne({
+        faculty: student.faculty,
+        closed: "false",
+      });
     if (!entry) {
       return res
         .status(400)
