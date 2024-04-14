@@ -3,6 +3,10 @@ const Faculty = require("../models/facultyModel");
 const Semester = require("../models/semesterModel");
 
 const entryController = {
+  async getEntries(){
+    const entries = await Entry.find();
+    res.json(entries);
+  },
 
   async getEntries(req, res) {
     console.log("test:::", req.params.id);
