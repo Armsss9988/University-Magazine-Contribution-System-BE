@@ -12,7 +12,7 @@ router.get("/guess/:id",submissionMiddleware.checkSelectedSubmission,submissionC
 
 router.use(authorization.verifyToken);
 // Create a new submission
-router.post('/',authorization.authorizeRole(['student']), submissionController.createSubmission);
+router.post('/:entryId',authorization.authorizeRole(['student']), submissionController.createSubmission);
 
 // Get submissions
 router.get('/:id',authorization.authorizeRole(['student','manager','coordinator']),submissionMiddleware.checkRBAC,submissionController.getSubmissionsById);

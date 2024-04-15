@@ -10,16 +10,16 @@ const emailService = require("../services/sendEmail");
 const getLocalTime = require("../services/getLocalTime");
 const sendEmail = require("../services/sendEmail");
 const archiver = require("archiver");
+const { getEntryById } = require("./entryController");
 
 // Create a new submission
 exports.createSubmission = async (req, res) => {
   try {
     console.log(req.user.id);
     const student = await User.findById(req.user.id);
-      const entry = await Entry.findOne({
-        faculty: student.faculty,
-        closed: "false",
-      });
+    console.log(req.params.entryId)
+    const entry = await Entry.findById(req.params.entryId);
+    console.log("test: ",entry)
     if (!entry) {
       return res
         .status(400)

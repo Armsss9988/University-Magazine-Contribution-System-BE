@@ -5,7 +5,6 @@ const authorization = require("../services/authorization");
 
 router.get("/faculty/:id", entryController.getEntries);
 router.get("/:id", entryController.getEntryById);
-
 router.use(authorization.verifyToken);
 router.use(authorization.authorizeRole(["manager"]));
 
