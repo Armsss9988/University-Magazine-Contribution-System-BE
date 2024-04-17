@@ -67,7 +67,7 @@ const contributorsEachFacultyEachSemester = async (req, res) => {
     res.json(studentCountByFacultyAndSemester);
   } catch (error) {
     console.error(error);
-    return res.json({ message: "Internal Server Error" });
+return res.status(500).json({ message: "Internal Server Error" });
   }
 };
 

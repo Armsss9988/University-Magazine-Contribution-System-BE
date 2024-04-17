@@ -339,7 +339,7 @@ exports.editSubmission = async (req, res) => {
     submission.title = title;
     submission.updated_at = getLocalTime.getDateNow();
     await submission.save();
-    res.json({ message: "Submission edited success!!", errorLog });
+res.status(200).json({ message: "Submission edited success!!", errorLog });
   } catch (error) {
     res.status(500).json({ message: "Error creating submission" });
   }

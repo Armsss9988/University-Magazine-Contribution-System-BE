@@ -79,6 +79,7 @@ const entryController = {
     }
   },
 
+<<<<<<< Updated upstream
   async updateEntry(req, res) {
     try {
       const faculty = await Faculty.findById(req.body.faculty);
@@ -135,13 +136,50 @@ const entryController = {
     } catch (error) {
       console.log(error);
       return res.json({ message: "Error update" });
+=======
+ async updateEntry(req, res) {
+  try {
+    const faculty = await Faculty.findById(req.body.faculty);
+    if (!faculty) {
+      return res.status(404).json({ message: "Faculty not found" });
+>>>>>>> Stashed changes
     }
-  },
+
+    const semester = await Semester.findById(req.body.semester);
+    if (!semester) {
+      return res.status(404).json({ message: "Semester not found" });
+    }
+    if (semester.closed) {
+      return res.status(400).json({ message: "Semester closed" });
+    }
+
+    const entry = await Entry.findById(req.params.id);
+    entry.start_date = req.body.start_date;
+    entry.end_date = req.body.end_date;
+    if(semester.start_date > entry.start_date){
+      return res.status(400).json({message: "Start date must be after start date of this semester"});
+    }
+    if(semester.final_closure_date < entry.end_date){
+      return res.status(400).json({message: "End date is over time for this semester"});
+    }
+    await entry.save();
+    res.status(200).json({ message: "Update successfully"});
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Error update" });
+  }
+},
 
   async deleteEntry(req, res) {
+<<<<<<< Updated upstream
     await Entry.findByIdAndRemove(req.params.id);
     res.json({ message: "Entry deleted" });
   },
+=======
+  await Entry.findByIdAndDelete(req.params.id);
+  res.status(200).json({ message: "Entry deleted" });
+},
+>>>>>>> Stashed changes
 };
 
 module.exports = entryController;
