@@ -344,7 +344,7 @@ exports.editSubmission = async (req, res) => {
     await submission.save();
     res.json({ message: "Submission edited success!!", errorLog });
   } catch (error) {
-    res.status(500).json({ message: "Error creating submission" });
+    res.status(500).json({ message: "Error edit submission" });
   }
 };
 
