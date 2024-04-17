@@ -11,6 +11,7 @@ const getLocalTime = require("../services/getLocalTime");
 const sendEmail = require("../services/sendEmail");
 const archiver = require("archiver");
 const { getEntryById } = require("./entryController");
+const docxtemplater = require("docxtemplater");
 
 // Create a new submission
 exports.createSubmission = async (req, res) => {
@@ -515,25 +516,27 @@ exports.downloadSelectedSubmissions = async (req, res) => {
     for (const contribution of submissions) {
       // Replace with actual file path generation
       document_pathArr = contribution.document_path.split(", ");
-      console.log({ document_pathArr });
-      for (const document of document_pathArr) {
-        const filePath = `${rootDir}/uploads/${document}`;
-        console.log(filePath);
-        try {
+      try {
+        if (filePath.endsWith(".docx")) {
+          // Handle .docx files using docxtemplater
+          const content = await docxtemplater.load(filePath).then((template) => {
+            const result = template.render();
+            return result.docx; // Get the extracted content as a buffer
+          });
+          await archive.append(content, { name: document });
+        } else {
+          // Use existing logic for other file types (e.g., fs.readFile)
           const fileBuffer = await fs.readFile(filePath);
-          await archive.file(filePath, { name: document });
-        } catch (error) {
-          console.error(`Error reading file: ${filePath}`, error);
-          // Handle the error gracefully, e.g., log and continue
+          await archive.append(fileBuffer, { name: document });
         }
+      } catch (error) {
+
       }
     }
 
-    // Finalize the archive
     await archive.finalize();
   } catch (error) {
     console.error(error);
-    res.status(500).send("Error downloading contributions");
   }
 };
 
