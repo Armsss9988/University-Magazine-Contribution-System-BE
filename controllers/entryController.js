@@ -4,24 +4,27 @@ const Semester = require("../models/semesterModel");
 
 const entryController = {
   async getEntries(req, res){
-    const entries = await Entry.find();
+    const entries = await Entry.find().populate(
+      "faculty semester"
+    );;
     res.json(entries);
   },
 
-  async getEntries(req, res) {
+  async getEntriesByFaculty(req, res) {
     console.log("test:::", req.params.id);
     const entries = await Entry.find({
       faculty: req.params.id,
       start_date: { $lte: new Date() },
       end_date: { $gte: new Date() },
     });
-    res.status(200).json({
-      message: entries,
-    });
+    res.status(200).json(entries);
   },
   async getEntryById(req, res) { 
     try {
-      const entry = await Entry.findById(req.params.id);
+      const entry = await Entry.findById(req.params.id).populate(
+        "faculty semester"
+      );
+      console.log("Entry: " + entry);
       if (!entry) {
         return res.status(404).json({ message: 'entry not found' });
       }
@@ -76,26 +79,44 @@ const entryController = {
       if (semester.closed) {
         return res.json({ message: "Semester closed" });
       }
+      const name = req.body.name;
+      if(name == null || name.length == 0 ){
+        return res.json({message: "None title"});
+      }
 
-      const entry = await Entry.findById(req.param.id);
+      const entry = await Entry.findById(req.params.id);
+      console.log("Entry: " + entry);
+      entry.name = name;
       entry.start_date = req.body.start_date;
       entry.end_date = req.body.end_date;
+      entry.faculty = faculty;
+      entry.semester = semester;
       if(semester.start_date > entry.start_date){
         return res.json({message: "Start date must be after start date of this semester"});
       }
       if(semester.final_closure_date < entry.end_date){
         return res.json({message: "End date is over time for this semester"});
       }
+      entry.save();
       res.json({ message: "Update successfully"});
     } catch (error) {
       console.log(error);
-      return res.json({ message: "Error update" });
+      return res.status(500).json({ message: "Error update" });
     }
   },
 
   async deleteEntry(req, res) {
-    await Entry.findByIdAndDelete(req.params.id);
-    res.json({ message: "Entry deleted" });
+    try{
+      if(req.params.id == null){
+        return res.status(400).json({message: "Id not found"});
+      }
+      await Entry.findByIdAndDelete(req.params.id);
+      return res.json({ message: "Entry deleted" });
+    }
+    catch(err){
+      return res.status(500).json({message: err});
+    }
+    
   },
 };
 

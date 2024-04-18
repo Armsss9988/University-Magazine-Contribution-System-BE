@@ -50,7 +50,7 @@ const checkSignup = async (req, res) => {
       if (!isMatch) {
         return res.status(401).json({ message: 'Invalid email or password' });
       }
-      const token = jwt.sign({ id: user.id, role: user.role} , process.env.JWT_SECRET, { expiresIn: '1h' });
+      const token = jwt.sign({ id: user.id, role: user.role} , process.env.JWT_SECRET, { expiresIn: '3h' });
       res.cookie('token', token, { httpOnly: true });
       res.json({ message: 'User login successfully', token });
       // Generate and send JWT token
