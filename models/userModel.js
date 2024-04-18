@@ -14,8 +14,8 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    minlength: 6, // Enforce a minimum password length for security
-    select: false // Don't include password in user data responses
+    minlength: 6, 
+    select: false 
   },
   role: {
     type: String,

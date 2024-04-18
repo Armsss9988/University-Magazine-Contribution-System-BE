@@ -5,28 +5,26 @@ const BlacklistedToken = require('../models/blackListedTokenModel');
 
 const checkSignup = async (req, res) => {
     try {
-      const { username, email, password, role, facultyName } = req.body;
+      const { username, email, password, role, faculty } = req.body;
   
       // Input validation and sanitization (consider using libraries like Joi or validator)
-      if (!username || !email || !password || !role || !facultyName) {
+      if (!username || !email || !password || !role) {
         return res.status(400).json({ message: 'Missing required fields' })
       }
-      const faculty = await Faculty.findOne({ name: facultyName });
-      if (!faculty) {
-        return res.status(400).json({ message: 'Invalid faculty name' });
-      }
+      const userFaculty = await Faculty.findById(faculty);
   
       // Check for existing user with same email
       const existingUser = await User.findOne({ email });
       if (existingUser) {
         return res.status(400).json({ message: 'Email already in use' });
       }
+      if(password.length < 6 ) return res.status(400).json({message: "Password must be at least 6 digit"});
       const newUser = new User({
         username,
         email,
         password,
         role,
-        faculty: faculty, // Assuming you have a foreign key relationship
+        faculty: (userFaculty != null)? userFaculty : null, 
       });
       await newUser.save();
       res.json(newUser);

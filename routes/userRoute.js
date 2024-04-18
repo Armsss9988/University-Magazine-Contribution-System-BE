@@ -15,8 +15,11 @@ router.get("/list/faculty",authorization.authorizeRole(["coordinator"]), userCon
 router.get("/profile", userController.getProfile);
 
 
-// router.use(authorization.authorizeRole(["admin"]));
+router.use(authorization.authorizeRole(["admin"]));
+
+
 router.post("/signup", authentication.checkSignup);
 router.delete("/delete/:id", userController.deleteUser);
+router.put("/edit/:id", userController.editUser );
 
 module.exports = router;
