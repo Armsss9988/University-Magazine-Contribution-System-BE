@@ -471,13 +471,21 @@ exports.updateComment = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     const { comment_content, status } = req.body;
-    console.log(comment_content);
-    console.log(status);
     if (!comment_content || !status) {
       return res.status(400).json({ message: "Missing input" });
     }
+
+    const submission = await Submission.findById(req.params.id);
     const currentTime = getLocalTime.getDateNow();
-    console.log(currentTime);
+    const submissionCreationTime = new Date(submission.createdAt);
+
+    // Calculate the difference in days between the current time and the submission creation time
+    const differenceInDays = (currentTime - submissionCreationTime) / (1000 * 60 * 60 * 24);
+
+    if (differenceInDays > 14) {
+      return res.status(400).json({ message: 'A comment must be made within 14 days of submission.' });
+    }
+
     const updatedSubmission = await Submission.findByIdAndUpdate(
       req.params.id,
       {
@@ -487,13 +495,11 @@ exports.updateComment = async (req, res) => {
       },
       { new: true }
     );
+
     const senderEmail = user.email;
-    console.log("Sender: " + senderEmail);
     const recipient = await User.findById(updatedSubmission.student);
-    console.log("Recipient: " + recipient);
     const recipientEmail = recipient.email;
     const role = user.role;
-    console.log("Recipient Email: " + recipientEmail);
     const title = `Dear ${recipient.username}! You have a new comment on the article you sent us.!`;
     await sendEmail.sendEmailNotification(
       senderEmail,
