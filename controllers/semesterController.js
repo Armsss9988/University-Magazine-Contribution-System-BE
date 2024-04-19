@@ -54,7 +54,7 @@ const createSemester = async (req, res) => {
     }
 
     await semester.save();
-    res.json(semester);
+    res.json({message: "Create semester successful"});
   } catch (error) {
     if (error.code === 11000) {
       // Handle Mongoose duplicate key error specifically
@@ -82,13 +82,13 @@ const updateSemester = async (req, res) => {
       {
         $match: {
           $or: [
-            { // Entry starts before new entry ends and ends after new entry starts
+            { 
               $and: [
                 { start_date: { $lt: semester.final_closure_date } },
                 { final_closure_date: { $gt: semester.start_date } },
               ],
             },
-            { // New entry starts before existing entry ends and ends after existing entry starts
+            { 
               $and: [
                 { start_date: { $lt: semester.start_date } },
                 { final_closure_date: { $gt: semester.final_closure_date } },

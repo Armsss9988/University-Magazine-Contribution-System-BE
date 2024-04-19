@@ -1,16 +1,20 @@
 const nodemailer = require("nodemailer");
-exports.sendEmailNotification = async (sender, role,recipient, subject, content) => 
+exports.sendEmailNotification = async (senderEmail,senderName, role,recipientEmail,recipientName, subject, content) => 
 {
 const SYSTEM_EMAIL = "umc.gre.fpt@gmail.com"; 
 const SYSTEM_PASSWORD = "xolq jtbu oypa dqyj"; 
-const RECIPIENT_EMAIL = recipient;
+const RECIPIENT_EMAIL = recipientEmail;
 const SUBJECT = subject;
 const MESSAGE_BODY = `
+Dear ${recipientName}!
+
 ${content}
 
 
 ${role} :
-${sender}
+${senderName}
+${senderEmail}
+
 `;
 
     const transporter = nodemailer.createTransport({

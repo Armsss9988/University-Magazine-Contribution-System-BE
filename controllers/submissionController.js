@@ -10,17 +10,17 @@ const emailService = require("../services/sendEmail");
 const getLocalTime = require("../services/getLocalTime");
 const sendEmail = require("../services/sendEmail");
 const archiver = require("archiver");
-const { getEntryById } = require("./entryController");
 const docxtemplater = require("docxtemplater");
+var AdmZip = require("adm-zip");
 
 // Create a new submission
 exports.createSubmission = async (req, res) => {
   try {
     console.log(req.user.id);
     const student = await User.findById(req.user.id);
-    console.log(req.params.entryId)
+    console.log(req.params.entryId);
     const entry = await Entry.findById(req.params.entryId);
-    console.log("test: ",entry)
+    console.log("test: ", entry);
     if (!entry) {
       return res
         .status(400)
@@ -108,7 +108,7 @@ exports.createSubmission = async (req, res) => {
     }
     await submission.save();
     const user = await User.findById(req.user.id);
-    const coordinator = await User.findOne({
+    const coordinators = await User.find({
       faculty: user.faculty,
       role: "coordinator",
     });
@@ -118,24 +118,33 @@ exports.createSubmission = async (req, res) => {
       }
       const emailSubject = "New submission!!";
       const emailContent = `New submission from student ${user.username}. You have 14 days to make a comment.`;
-      // Gửi email thông báo về bài viết mới
-      await emailService.sendEmailNotification(
-        user.email,
-        user.role,
-        coordinator.email,
-        emailSubject,
-        emailContent
-      );
+      if (coordinators != null && coordinators.length > 0) {
+        coordinators.forEach(async (coordinator) => {
+          try {
+            await emailService.sendEmailNotification(
+              user.email,
+              user.username,
+              user.role,
+              coordinator.email,
+              coordinator.username,
+              emailSubject,
+              emailContent
+            );
+          } catch (err) {
+            return res.status(404).json({ message: err });
+          }
+        });
+      }
 
-      res.status(200).json({
+      return res.status(200).json({
         message: "Submission created success!!",
       });
     } catch (error) {
       console.error("Error sending email:", error);
-      res.status(500).json({ message: "Error sending email" });
+      return res.status(500).json({ message: "Error sending email" });
     }
   } catch (error) {
-    res.status(500).json({ message: "Error creating submission" });
+    return res.status(500).json({ message: "Error creating submission" });
   }
 };
 
@@ -151,47 +160,66 @@ exports.getSubmissionsByRole = async (req, res) => {
       this.getSubmissionsByUser(req, res);
     }
   } catch (error) {
-    res.status(500).json({ message: "Error fetching submissions" });
+    return res.status(500).json({ message: "Error fetching submissions" });
   }
 };
 // Get all submissions
 exports.getAllSelectedSubmissions = async (req, res) => {
   try {
     const data = [];
-    const submissions = await Submission.find({ status: "selected" });
-    res.json(submissions);
+    const submissions = await Submission.find({ status: "selected" }).populate({
+      path: "entry", 
+      populate: {
+         path: "semester faculty" 
+      }
+   }).populate("student");
+    return res.json(submissions);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching submissions" });
+    return res.status(500).json({ message: "Error fetching submissions" });
   }
 };
-
 
 exports.getSubmissionsByFaculty = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     const { faculty } = user.faculty; // Get faculty ID from query parameter
-    const submissions = await Submission.find({ faculty });
-    res.json(submissions);
+    const submissions = await Submission.find({ faculty }).populate({
+      path: "entry", 
+      populate: {
+         path: "semester faculty" 
+      }
+   }).populate("student");
+    return res.json(submissions);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error getting submissions" });
+    return res.status(500).json({ message: "Error getting submissions" });
   }
 };
 exports.getSubmissionsByUser = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
-    const submissions = await Submission.find({ student: user });
-    res.json(submissions);
+    const submissions = await Submission.find({ student: user }).populate({
+      path: "entry", 
+      populate: {
+         path: "semester faculty" 
+      }
+   }).populate("student");
+    return res.json(submissions);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error getting submissions" });
+    return res.status(500).json({ message: "Error getting submissions" });
   }
 };
 
 exports.getSubmissionsById = async (req, res) => {
   try {
     const id = req.params.id;
-    const submission = await Submission.findById(id);
+    const submission = await Submission.findById(id).populate({
+      path: "entry", 
+      populate: {
+         path: "semester faculty" 
+      }
+   }).populate("student");
     const documentPaths = submission.document_path.split(",");
 
     const files = await Promise.all(
@@ -217,14 +245,14 @@ exports.getSubmissionsById = async (req, res) => {
 
     const filteredFiles = files.filter((file) => file !== null); // Remove null entries
 
-    res.json({
+    return res.json({
       submission,
       files: filteredFiles,
       message: "Get item successfully!",
     });
   } catch (err) {
     console.error("Error getting submissions:", err);
-    res.status(500).json({ message: "Error getting submissions" });
+    return res.status(500).json({ message: "Error getting submissions" });
   }
 };
 function getFileType(filePath) {
@@ -243,7 +271,6 @@ function getFileType(filePath) {
 
 exports.editSubmission = async (req, res) => {
   try {
-    console.log("File: " + req.files.File);
     const submission = await Submission.findById(req.params.id);
     const student = await User.findById(submission.student);
     const entry = await Entry.findById(submission.entry);
@@ -342,9 +369,9 @@ exports.editSubmission = async (req, res) => {
     submission.title = title;
     submission.updated_at = getLocalTime.getDateNow();
     await submission.save();
-    res.json({ message: "Submission edited success!!", errorLog });
+    return res.json({ message: "Submission edited success!!", errorLog });
   } catch (error) {
-    res.status(500).json({ message: "Error edit submission" });
+    return res.status(500).json({ message: "Error edit submission" });
   }
 };
 
@@ -434,9 +461,9 @@ exports.updateSubmission = async (req, res) => {
     submission.title = title;
     submission.updated_at = getLocalTime.getDateNow();
     submission.save();
-    res.json({ message: "Submission Update successfully!" });
+    return res.json({ message: "Submission Update successfully!" });
   } catch (error) {
-    res.status(500).json({ message: "Error updating submission" });
+    return res.status(500).json({ message: "Error updating submission" });
   }
 };
 
@@ -470,14 +497,16 @@ exports.updateComment = async (req, res) => {
     const title = `Dear ${recipient.username}! You have a new comment on the article you sent us.!`;
     await sendEmail.sendEmailNotification(
       senderEmail,
+      user.username,
       role,
       recipientEmail,
+      recipient.username,
       title,
       comment_content
     );
-    res.json({ message: "Comment successfully!" });
+    return res.json({ message: "Comment successfully!" });
   } catch (error) {
-    res.status(500).json({ message: "Error comment submission" });
+    return res.status(500).json({ message: "Error comment submission" });
   }
 };
 
@@ -485,15 +514,15 @@ exports.updateComment = async (req, res) => {
 exports.deleteSubmission = async (req, res) => {
   try {
     await Submission.findByIdAndDelete(req.params.id);
-    res.json({ message: "Submission deleted successfully" });
+    return res.json({ message: "Submission deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Error deleting submission" });
+    return res.status(500).json({ message: "Error deleting submission" });
   }
 };
 
 exports.downloadSelectedSubmissions = async (req, res) => {
   try {
-    // Find selected contributions (replace with your actual filtering)
+    // Find selected contributions
     const submissions = await Submission.find({ status: "selected" });
 
     // Check if any contributions found
@@ -502,39 +531,47 @@ exports.downloadSelectedSubmissions = async (req, res) => {
     }
 
     // Create a ZIP archive
-    const archive = archiver("zip");
+    var zip = new AdmZip();
 
-    // Set content disposition for download (optional)
+    // Set content disposition for download
     res.setHeader(
       "Content-Disposition",
       "attachment; filename=contributions.zip"
     );
     res.setHeader("Content-Type", "application/zip");
 
-    // Pipe the archive to the response stream
-    archive.pipe(res);
     for (const contribution of submissions) {
-      // Replace with actual file path generation
-      document_pathArr = contribution.document_path.split(", ");
+      const submissionFolder = path.join(rootDir, contribution._id.toString());
       try {
-        if (filePath.endsWith(".docx")) {
-          // Handle .docx files using docxtemplater
-          const content = await docxtemplater.load(filePath).then((template) => {
-            const result = template.render();
-            return result.docx; // Get the extracted content as a buffer
-          });
-          await archive.append(content, { name: document });
-        } else {
-          // Use existing logic for other file types (e.g., fs.readFile)
-          const fileBuffer = await fs.readFile(filePath);
-          await archive.append(fileBuffer, { name: document });
-        }
+        await fs.mkdir(submissionFolder, { recursive: true });
       } catch (error) {
+        console.error(`Error creating folder: ${submissionFolder}`, error);
+        continue;
+      }
 
+      document_pathArr = contribution.document_path.split(",");
+      for (const document of document_pathArr) {
+        const filePath = `${rootDir}/uploads/${document}`;
+        const targetFilePath = path.join(submissionFolder, document);
+
+        try {
+          await fs.access(filePath, fs.constants.F_OK | fs.constants.R_OK);
+          await fs.copyFile(filePath, targetFilePath);
+        } catch (error) {
+          console.error(`Error copying file: ${filePath}`, error);
+        }
+      }
+      zip.addLocalFolder(submissionFolder, path.basename(submissionFolder));
+      try {
+        await fs.rm(submissionFolder, { recursive: true });
+      } catch (error) {
+        console.error(`Error deleting folder: ${submissionFolder}`, error);
+        // Handle the error gracefully (e.g., log, skip deletion)
       }
     }
 
-    await archive.finalize();
+    var zipContent = zip.toBuffer();
+    res.end(zipContent);
   } catch (error) {
     console.error(error);
   }
@@ -542,39 +579,91 @@ exports.downloadSelectedSubmissions = async (req, res) => {
 
 exports.downloadCheckedSubmissions = async (req, res) => {
   try {
-    // Create a ZIP archive
-    const archive = archiver("zip");
+    console.log(req.body.submissionIds);
+    const { submissionIds } = req.body;
 
-    // Set content disposition for download (optional)
+    if (submissionIds.length === 0) {
+      return res.status(404).send("No contributions found for selected");
+    }
+    if (!Array.isArray(submissionIds)) {
+      // Single file uploaded
+
+      var submissionIdss = [submissionIds];
+    } else {
+      var submissionIdss = submissionIds;
+    }
+    var zip = new AdmZip();
     res.setHeader(
       "Content-Disposition",
       "attachment; filename=contributions.zip"
     );
     res.setHeader("Content-Type", "application/zip");
 
-    // Pipe the archive to the response stream
-    archive.pipe(res);
-    const { submissionIds } = req.body;
-    for (const submissionId of submissionIds) {
+    for (const submissionId of submissionIdss) {
       const submission = await Submission.findById(submissionId);
-      document_pathArr = submission.document_path.split(", ");
-      console.log({ document_pathArr });
+      const submissionFolder = path.join(rootDir, submission._id.toString());
+      try {
+        await fs.mkdir(submissionFolder, { recursive: true });
+      } catch (error) {
+        console.error(`Error creating folder: ${submissionFolder}`, error);
+        continue;
+      }
+
+      document_pathArr = submission.document_path.split(",");
       for (const document of document_pathArr) {
         const filePath = `${rootDir}/uploads/${document}`;
-        console.log(filePath);
+        const targetFilePath = path.join(submissionFolder, document);
+
         try {
-          const fileBuffer = await fs.readFile(filePath);
-          await archive.file(filePath, { name: document });
+          await fs.access(filePath, fs.constants.F_OK | fs.constants.R_OK);
+          await fs.copyFile(filePath, targetFilePath);
         } catch (error) {
-          console.error(`Error reading file: ${filePath}`, error);
-          // Handle the error gracefully, e.g., log and continue
+          console.error(`Error copying file: ${filePath}`, error);
         }
       }
+      zip.addLocalFolder(submissionFolder, path.basename(submissionFolder));
+      try {
+        await fs.rm(submissionFolder, { recursive: true });
+      } catch (error) {
+        console.error(`Error deleting folder: ${submissionFolder}`, error);
+        // Handle the error gracefully (e.g., log, skip deletion)
+      }
     }
-    // Finalize the archive
-    await archive.finalize();
+
+    var zipContent = zip.toBuffer();
+    res.end(zipContent);
   } catch (error) {
     console.error(error);
-    res.status(500).send("Error downloading contributions");
+  }
+};
+
+exports.dowloadSubmissionById = async (req, res) => {
+  try {
+    console.log(req.params.id);
+    const { id } = req.params;
+
+    if (id.length === 0) {
+      return res.status(404).send("Id not found ");
+    }
+
+    var zip = new AdmZip();
+    const submission = await Submission.findById(id);
+    document_pathArr = submission.document_path.split(",");
+    for (const document of document_pathArr) {
+      const filePath = `${rootDir}/uploads/${document}`;
+
+      try {
+        await fs.access(filePath, fs.constants.F_OK | fs.constants.R_OK);
+        
+      } catch (error) {
+        console.error(`Error copying file: ${filePath}`, error);
+        continue;
+      }
+      zip.addLocalFile(filePath);
+    }
+    var zipContent = zip.toBuffer();
+    res.end(zipContent);
+  } catch (error) {
+    console.error(error);
   }
 };

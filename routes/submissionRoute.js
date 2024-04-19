@@ -4,11 +4,10 @@ const router = express.Router();
 const submissionController = require('../controllers/submissionController');
 const authorization = require('../services/authorization');
 const submissionMiddleware = require('../services/submissionAuth');
-const zipDownload = require('../services/zipDownload'); 
 
 
 router.get("/guess/list", submissionController.getAllSelectedSubmissions);
-router.get("/guess/:id",submissionMiddleware.checkSelectedSubmission,submissionController.getSubmissionsById);
+router.get("/guess/download/:id",submissionController.dowloadSubmissionById);
 
 router.use(authorization.verifyToken);
 // Create a new submission
@@ -30,6 +29,6 @@ router.put('/comment/:id',authorization.authorizeRole(['coordinator']),submissio
 router.delete('/:id',authorization.authorizeRole(['coordinator']),submissionMiddleware.checkRBAC, submissionController.deleteSubmission);
 
 //Download selected submission
-router.post('/manager/download/selected', authorization.authorizeRole(['manager']), submissionController.downloadSelectedSubmissions);
+router.get('/manager/download/selected', authorization.authorizeRole(['manager']), submissionController.downloadSelectedSubmissions);
 router.post('/manager/download/checked', authorization.authorizeRole(['manager']), submissionController.downloadCheckedSubmissions);
 module.exports = router;
