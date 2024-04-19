@@ -471,6 +471,8 @@ exports.updateComment = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     const { comment_content, status } = req.body;
+    console.log(comment_content);
+    console.log(status);
     if (!comment_content || !status) {
       return res.status(400).json({ message: "Missing input" });
     }
@@ -486,6 +488,7 @@ exports.updateComment = async (req, res) => {
       return res.status(400).json({ message: 'A comment must be made within 14 days of submission.' });
     }
 
+    console.log(currentTime);
     const updatedSubmission = await Submission.findByIdAndUpdate(
       req.params.id,
       {
@@ -495,11 +498,13 @@ exports.updateComment = async (req, res) => {
       },
       { new: true }
     );
-
     const senderEmail = user.email;
+    console.log("Sender: " + senderEmail);
     const recipient = await User.findById(updatedSubmission.student);
+    console.log("Recipient: " + recipient);
     const recipientEmail = recipient.email;
     const role = user.role;
+    console.log("Recipient Email: " + recipientEmail);
     const title = `Dear ${recipient.username}! You have a new comment on the article you sent us.!`;
     await sendEmail.sendEmailNotification(
       senderEmail,
