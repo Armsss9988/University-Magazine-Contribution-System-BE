@@ -6,18 +6,27 @@ const entryController = {
   async getEntries(req, res){
     const entries = await Entry.find().populate(
       "faculty semester"
-    );;
+    );
     res.json(entries);
   },
 
   async getEntriesByFaculty(req, res) {
-    console.log("test:::", req.params.id);
-    const entries = await Entry.find({
-      faculty: req.params.id,
-      start_date: { $lte: new Date() },
-      end_date: { $gte: new Date() },
-    });
-    res.status(200).json(entries);
+    try{
+      console.log("test:::", req.params.id);
+      const entries = await Entry.find({
+        faculty: req.params.id,
+        start_date: { $lte: new Date() },
+        end_date: { $gte: new Date() },
+      }).populate(
+        "faculty semester"
+      );
+      res.status(200).json(entries);
+    }
+    catch(error){
+      console.log(error);
+      return res.status(500).json({ message: "Error get entries" });
+    }
+    
   },
   async getEntryById(req, res) { 
     try {

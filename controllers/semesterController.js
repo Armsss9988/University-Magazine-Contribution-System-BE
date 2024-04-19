@@ -54,7 +54,7 @@ const createSemester = async (req, res) => {
     }
 
     await semester.save();
-    res.json(semester);
+    res.json({message: "Create semester successful"});
   } catch (error) {
     if (error.code === 11000) {
       // Handle Mongoose duplicate key error specifically

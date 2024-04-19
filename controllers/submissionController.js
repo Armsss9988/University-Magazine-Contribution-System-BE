@@ -123,8 +123,10 @@ exports.createSubmission = async (req, res) => {
           try {
             await emailService.sendEmailNotification(
               user.email,
+              user.username,
               user.role,
               coordinator.email,
+              coordinator.username,
               emailSubject,
               emailContent
             );
@@ -165,9 +167,12 @@ exports.getSubmissionsByRole = async (req, res) => {
 exports.getAllSelectedSubmissions = async (req, res) => {
   try {
     const data = [];
-    const submissions = await Submission.find({ status: "selected" }).populate(
-      "entry"
-    );
+    const submissions = await Submission.find({ status: "selected" }).populate({
+      path: "entry", 
+      populate: {
+         path: "semester faculty" 
+      }
+   }).populate("student");
     return res.json(submissions);
   } catch (error) {
     return res.status(500).json({ message: "Error fetching submissions" });
@@ -178,7 +183,12 @@ exports.getSubmissionsByFaculty = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     const { faculty } = user.faculty; // Get faculty ID from query parameter
-    const submissions = await Submission.find({ faculty });
+    const submissions = await Submission.find({ faculty }).populate({
+      path: "entry", 
+      populate: {
+         path: "semester faculty" 
+      }
+   }).populate("student");
     return res.json(submissions);
   } catch (err) {
     console.error(err);
@@ -188,7 +198,12 @@ exports.getSubmissionsByFaculty = async (req, res) => {
 exports.getSubmissionsByUser = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
-    const submissions = await Submission.find({ student: user });
+    const submissions = await Submission.find({ student: user }).populate({
+      path: "entry", 
+      populate: {
+         path: "semester faculty" 
+      }
+   }).populate("student");
     return res.json(submissions);
   } catch (err) {
     console.error(err);
@@ -199,7 +214,12 @@ exports.getSubmissionsByUser = async (req, res) => {
 exports.getSubmissionsById = async (req, res) => {
   try {
     const id = req.params.id;
-    const submission = await Submission.findById(id);
+    const submission = await Submission.findById(id).populate({
+      path: "entry", 
+      populate: {
+         path: "semester faculty" 
+      }
+   }).populate("student");
     const documentPaths = submission.document_path.split(",");
 
     const files = await Promise.all(
@@ -251,7 +271,6 @@ function getFileType(filePath) {
 
 exports.editSubmission = async (req, res) => {
   try {
-    console.log("File: " + req.files.File);
     const submission = await Submission.findById(req.params.id);
     const student = await User.findById(submission.student);
     const entry = await Entry.findById(submission.entry);
@@ -478,8 +497,10 @@ exports.updateComment = async (req, res) => {
     const title = `Dear ${recipient.username}! You have a new comment on the article you sent us.!`;
     await sendEmail.sendEmailNotification(
       senderEmail,
+      user.username,
       role,
       recipientEmail,
+      recipient.username,
       title,
       comment_content
     );
