@@ -20,7 +20,7 @@ const verifyToken = async (req, res, next) => {
   }
   catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Error creating user' });
+    return res.status(500).json({ message: 'Error creating user' });
   }
 };
 
@@ -36,9 +36,7 @@ const authorizeRole = (roles) => async (req, res, next) => {
   if (!roles.includes(user.role)) {
     return res.status(403).json({ message: "Forbidden" });
   }
-
-  // Check faculty affiliation if required
-  
+  const users = await User.findById(req.user.id);
   next();
 };
 

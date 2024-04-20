@@ -1,13 +1,27 @@
 const Entry = require("../models/entryModel");
 const Faculty = require("../models/facultyModel");
 const Semester = require("../models/semesterModel");
+const Submission = require("../models/submissionModel");
 
 const entryController = {
   async getEntries(req, res){
-    const entries = await Entry.find().populate(
-      "faculty semester"
-    );
-    res.json(entries);
+    const entries = await Entry.find().populate("faculty semester");
+        const submissions = await Submission.find(); 
+
+        const entrySubmissionsCount = new Map();
+
+        submissions.forEach(submission => {
+            const entryId = submission.entry.toString(); 
+            entrySubmissionsCount.set(entryId, (entrySubmissionsCount.get(entryId) || 0) + 1);
+        });
+
+        const entriesWithSubmissionsCount = entries.map(entry => {
+            const entryId = entry._id.toString(); 
+            const submissions_count = entrySubmissionsCount.get(entryId) || 0;
+            return { ...entry.toObject(), submissions_count };
+        });
+
+        res.json(entriesWithSubmissionsCount);
   },
 
   async getEntriesByFaculty(req, res) {
@@ -15,11 +29,11 @@ const entryController = {
       console.log("test:::", req.params.id);
       const entries = await Entry.find({
         faculty: req.params.id,
-        start_date: { $lte: new Date() },
-        end_date: { $gte: new Date() },
+        status: "opening"
       }).populate(
         "faculty semester"
       );
+      
       res.status(200).json(entries);
     }
     catch(error){
@@ -58,6 +72,9 @@ const entryController = {
       if (semester.closed) {
         return res.status(400).json({ message: "Semester closed" });
       }
+      if(req.body.name == null){
+        return res.status(400).json({ message: "Please enter topic for magazine" });
+      }
       
       const entry = new Entry(req.body);
       if(semester.start_date > entry.start_date){
@@ -90,7 +107,7 @@ const entryController = {
       }
       const name = req.body.name;
       if(name == null || name.length == 0 ){
-        return res.json({message: "None title"});
+        return res.json({message: "Please enter magazine topic"});
       }
 
       const entry = await Entry.findById(req.params.id);

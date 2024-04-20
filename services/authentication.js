@@ -27,10 +27,10 @@ const checkSignup = async (req, res) => {
         faculty: (userFaculty != null)? userFaculty : null, 
       });
       await newUser.save();
-      res.json(newUser);
+      return res.json(newUser);
     } catch (err) {
       console.error(err);
-      res.status(500).json({ message: 'Error creating user' });
+      return res.status(500).json({ message: 'Error creating user' });
     }
   };
   
@@ -50,11 +50,11 @@ const checkSignup = async (req, res) => {
       }
       const token = jwt.sign({ id: user.id, role: user.role} , process.env.JWT_SECRET, { expiresIn: '3h' });
       res.cookie('token', token, { httpOnly: true });
-      res.json({ message: 'User login successfully', token });
+      return res.json({ message: 'User login successfully', token });
       // Generate and send JWT token
     } catch (err) {
       console.error(err);
-      res.status(500).json({ message: 'Error logging in' });
+      return res.status(500).json({ message: 'Error logging in' });
     }
   };
   const checkLogout = async (req,res) => {
@@ -68,10 +68,10 @@ const checkSignup = async (req, res) => {
       // Optionally clear client-side cookie
       res.clearCookie('token');
   
-      res.status(200).json({ message: 'Successfully logged out' });
+      return res.status(200).json({ message: 'Successfully logged out' });
     } catch (error) {
       console.error('Logout error:', error);
-      res.status(500).json({ message: 'Logout failed' });
+      return res.status(500).json({ message: 'Logout failed' });
     }
   }
 

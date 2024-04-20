@@ -1,47 +1,66 @@
-const cron = require('node-cron');
-const Entry = require('../models/entryModel');
-const localTime = require('../services/getLocalTime');
-const Submission = require('../models/submissionModel');
+const cron = require("node-cron");
+const Entry = require("../models/entryModel");
+const localTime = require("../services/getLocalTime");
+const Semester = require("../models/semesterModel");
 
-function autoCloseEntriesAndSemesters() {
+const autoCloseEntriesAndSemesters = async () => {
   console.log("Checking");
   const currentDate = localTime.getDateNow();
-  
-  Entry.find({ end_date: { $lt: currentDate }, closed: 'false' })
-    .then(entriesToClose => {
-      if (entriesToClose.length === 0) { console.log("Not found entry"); }
-      entriesToClose.forEach(entry => {
-        console.log("entry");
-        console.log(entry.end_date);
-        entry.closed = true;
-        entry.save(); 
-      Submission.find({entry: entry}).then(submissionToClosed => {
-        if (submissionToClosed.length === 0) { console.log("Not found sbmission"); }
-        submissionToClosed.forEach(submission => {
-          submission.closed = "true"
-          submission.save();
-        })
-      })
+  await Semester.find()
+  .then((semesters) => {
+    semesters.forEach(async (semester) => {
+      if (currentDate < semester.start_date) {
+        semester.status = "pending";
+      } else if (
+        currentDate >= semester.start_date &&
+        currentDate <= semester.final_closure_date
+      ) {
+        semester.status = "opening";
+      } else {
+        semester.status = "closed";
+      }
+
+      try {
+        await semester.save();
+        console.log(
+          `Semester ${semester.academic_year} status updated to ${semester.status}`
+        );
+      } catch (error) {
+        console.error("Error updating entry status:", error);
+      }
+    });
+  })
+  .catch((error) => {
+    console.error("Error closing semesters:", error);
+  });
+  await Entry.find()
+    .then(async (entries) => {
+      entries.forEach(async (entry) => {
+        if (currentDate < entry.start_date) {
+          entry.status = "pending";
+        } else if (
+          currentDate >= entry.start_date &&
+          currentDate <= entry.end_date
+        ) {
+          entry.status = "opening";
+        } else {
+          entry.status = "closed";
+        }
+
+        try {
+          await entry.save();
+          console.log(`Entry ${entry.name} status updated to ${entry.status}`);
+        } catch (error) {
+          console.error("Error updating entry status:", error);
+        }
       });
     })
-    .catch(error => {
-      console.error('Error closing entries:', error);
+    .catch((error) => {
+      console.error("Error closing entries:", error);
     });
 
-  Semester.find({ endDate: { $lt: currentDate }, closed: 'false' })
-    .then(semestersToClose => {
-      semestersToClose.forEach(semester => {
-        semester.closed = true;
-        semester.save(); // Update the semester status in the database
-        // Send notification (optional)
-        // ...
-      });
-    })
-    .catch(error => {
-      console.error('Error closing semesters:', error);
-    });
-}
+ 
+};
 
-// Schedule cron job to run every second (consider a more appropriate schedule)
-const check = cron.schedule('* * * * *', autoCloseEntriesAndSemesters);
+const check = cron.schedule("* * * * *", autoCloseEntriesAndSemesters);
 module.exports = check;

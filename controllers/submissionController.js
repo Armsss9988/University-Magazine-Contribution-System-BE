@@ -167,12 +167,14 @@ exports.getSubmissionsByRole = async (req, res) => {
 exports.getAllSelectedSubmissions = async (req, res) => {
   try {
     const data = [];
-    const submissions = await Submission.find({ status: "selected" }).populate({
-      path: "entry", 
-      populate: {
-         path: "semester faculty" 
-      }
-   }).populate("student");
+    const submissions = await Submission.find({ status: "selected" })
+      .populate({
+        path: "entry",
+        populate: {
+          path: "semester faculty",
+        },
+      })
+      .populate("student");
     return res.json(submissions);
   } catch (error) {
     return res.status(500).json({ message: "Error fetching submissions" });
@@ -181,15 +183,26 @@ exports.getAllSelectedSubmissions = async (req, res) => {
 
 exports.getSubmissionsByFaculty = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    const { faculty } = user.faculty; // Get faculty ID from query parameter
-    const submissions = await Submission.find({ faculty }).populate({
-      path: "entry", 
-      populate: {
-         path: "semester faculty" 
+    const user = await User.findById(req.user.id).populate("faculty");
+    const { faculty } = user;
+    console.log("coor faculty: " + faculty.name);
+
+    const submissions = await Submission.find()
+      .populate({
+        path: "entry",
+        populate: {
+          path: "semester faculty",
+        },
+      })
+      .populate("student");
+    let sub = [];
+    submissions.forEach((submission) => {
+      if (faculty._id.equals(submission.entry?.faculty?._id || "")) {
+        console.log(submission);
+        sub.push(submission);
       }
-   }).populate("student");
-    return res.json(submissions);
+    });
+    return res.json(sub);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Error getting submissions" });
@@ -198,12 +211,14 @@ exports.getSubmissionsByFaculty = async (req, res) => {
 exports.getSubmissionsByUser = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
-    const submissions = await Submission.find({ student: user }).populate({
-      path: "entry", 
-      populate: {
-         path: "semester faculty" 
-      }
-   }).populate("student");
+    const submissions = await Submission.find({ student: user })
+      .populate({
+        path: "entry",
+        populate: {
+          path: "semester faculty",
+        },
+      })
+      .populate("student");
     return res.json(submissions);
   } catch (err) {
     console.error(err);
@@ -212,14 +227,17 @@ exports.getSubmissionsByUser = async (req, res) => {
 };
 
 exports.getSubmissionsById = async (req, res) => {
+  console.log("Get submission by faculty");
   try {
     const id = req.params.id;
-    const submission = await Submission.findById(id).populate({
-      path: "entry", 
-      populate: {
-         path: "semester faculty" 
-      }
-   }).populate("student");
+    const submission = await Submission.findById(id)
+      .populate({
+        path: "entry",
+        populate: {
+          path: "semester faculty",
+        },
+      })
+      .populate("student");
     const documentPaths = submission.document_path.split(",");
 
     const files = await Promise.all(
@@ -228,22 +246,21 @@ exports.getSubmissionsById = async (req, res) => {
         try {
           const fileBuffer = await fs.readFile(filePath);
           const stats = await fs.stat(filePath);
-          const fileType = getFileType(filePath); // Function to determine file type
+          const fileType = getFileType(filePath);
           return {
             name: documentPath.substring(id.length * 2),
             type: fileType,
             data: Buffer.from(fileBuffer),
-            size: stats.size, // Base64 encode file buffer
+            size: stats.size,
           };
         } catch (error) {
           console.error(`Error reading file: ${filePath}`, error);
-          // Optionally log specific error details or omit the file from response
           return null;
         }
       })
     );
 
-    const filteredFiles = files.filter((file) => file !== null); // Remove null entries
+    const filteredFiles = files.filter((file) => file !== null);
 
     return res.json({
       submission,
@@ -476,34 +493,44 @@ exports.updateComment = async (req, res) => {
     if (!comment_content || !status) {
       return res.status(400).json({ message: "Missing input" });
     }
+    try {
+    } catch (err) {}
     const currentTime = getLocalTime.getDateNow();
-    console.log(currentTime);
-    const updatedSubmission = await Submission.findByIdAndUpdate(
-      req.params.id,
-      {
-        status: status,
-        comment_content: comment_content,
-        comment_at: currentTime,
-      },
-      { new: true }
-    );
-    const senderEmail = user.email;
-    console.log("Sender: " + senderEmail);
-    const recipient = await User.findById(updatedSubmission.student);
-    console.log("Recipient: " + recipient);
-    const recipientEmail = recipient.email;
-    const role = user.role;
-    console.log("Recipient Email: " + recipientEmail);
-    const title = `Dear ${recipient.username}! You have a new comment on the article you sent us.!`;
-    await sendEmail.sendEmailNotification(
-      senderEmail,
-      user.username,
-      role,
-      recipientEmail,
-      recipient.username,
-      title,
-      comment_content
-    );
+    try {
+      const updatedSubmission = await Submission.findByIdAndUpdate(
+        req.params.id,
+        {
+          status: status,
+          comment_content: comment_content,
+          comment_at: currentTime,
+        },
+        { new: true }
+      );
+    } catch (err) {
+      return res.status(400).json({ message: `Invalid input` });
+    }
+
+    try {
+
+      const recipient = await User.findById(updatedSubmission.student._id);
+      if (recipient != null) {
+        const title = `Dear ${recipient?.username}! You have a new comment on the article you sent us.!`;
+        const senderEmail = user.email;
+        const role = user.role;
+        await sendEmail.sendEmailNotification(
+          senderEmail,
+          user.username,
+          role,
+          recipient?.email,
+          recipient?.username,
+          title,
+          comment_content
+        );
+      }
+    } catch (err) {
+      return res.status(500).json({ message: "Error sending email" });
+    }
+
     return res.json({ message: "Comment successfully!" });
   } catch (error) {
     return res.status(500).json({ message: "Error comment submission" });
@@ -654,7 +681,6 @@ exports.dowloadSubmissionById = async (req, res) => {
 
       try {
         await fs.access(filePath, fs.constants.F_OK | fs.constants.R_OK);
-        
       } catch (error) {
         console.error(`Error copying file: ${filePath}`, error);
         continue;
