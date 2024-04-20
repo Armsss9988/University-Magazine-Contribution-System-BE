@@ -175,7 +175,13 @@ const percentageOfContributionsByFaculty = async (req, res) => {
 
 const submissionWithoutComment = async (req, res) => {
   try {
-    const submissions = await Submission.find({ comment: null });
+    const submissions = await Submission.find({ comment: null }) .populate({
+      path: "entry",
+      populate: {
+        path: "semester faculty",
+      },
+    })
+    .populate("student");;
     res.json(submissions);
   } catch (error) {
     console.log(error);
@@ -188,7 +194,13 @@ const submissionWithoutCommentafter14days = async (req, res) => {
     fourteenDaysAgo.setTime(currentDate - 14 * 24 * 60 * 60 * 1000);
     const submissions = await Submission.find({
       created_at: { $lt: fourteenDaysAgo }, comment: null
-    });
+    }) .populate({
+      path: "entry",
+      populate: {
+        path: "semester faculty",
+      },
+    })
+    .populate("student");;
     res.json(submissions);
   } catch (error) {
     console.log(error);
