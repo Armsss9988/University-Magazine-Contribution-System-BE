@@ -54,7 +54,7 @@ exports.createSubmission = async (req, res) => {
     });
     const fileNames = [];
     // Validate file extensions
-    const allowedExtensions = [".jpg", ".jpeg", ".png", ".docx", ".doc"];
+    const allowedExtensions = [".jpg", ".jpeg", ".png", ".docx", ".doc", ".pdf"];
     const invalidFiles = uploadedFiles.filter((file) => {
       const extension = path.extname(file.name).toLowerCase();
       return !allowedExtensions.includes(extension);
@@ -72,7 +72,7 @@ exports.createSubmission = async (req, res) => {
     // Count the number of uploaded docx files
     const docxFiles = uploadedFiles.filter((file) => {
       const ext = path.extname(file.name).toLowerCase();
-      return ext === ".docx" || ext === ".doc";
+      return ext === ".docx" || ext === ".doc" || ext === ".pdf";
     });
     console.log("Word file: " + docxFiles);
     const duplicate = new Set(uploadedFiles.map((item) => item.name));
@@ -108,14 +108,15 @@ exports.createSubmission = async (req, res) => {
     }
     await submission.save();
     const user = await User.findById(req.user.id);
-    const coordinators = await User.find({
-      faculty: user.faculty,
-      role: "coordinator",
-    });
+    
     try {
       if (!submission) {
         return res.status(404).json({ message: "Article not found" });
       }
+      const coordinators = await User.find({
+        faculty: user.faculty,
+        role: "coordinator",
+      });
       const emailSubject = "New submission!!";
       const emailContent = `New submission from student ${user.username}. You have 14 days to make a comment.`;
       if (coordinators != null && coordinators.length > 0) {
@@ -281,7 +282,7 @@ function getFileType(filePath) {
     ".docx":
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ".doc": "application/msword",
-    // Add more mime types as needed
+    ".pdf": "application/pdf"
   };
   return mimeTypes[extension];
 }
@@ -326,7 +327,7 @@ exports.editSubmission = async (req, res) => {
     }
 
     // Validate file extensions
-    const allowedExtensions = [".jpg", ".jpeg", ".png", ".docx", ".doc"];
+    const allowedExtensions = [".jpg", ".jpeg", ".png", ".docx", ".doc", ".pdf"];
     const invalidFiles = uploadedFiles.filter((file) => {
       const extension = path.extname(file.name).toLowerCase();
       return !allowedExtensions.includes(extension);
@@ -344,7 +345,7 @@ exports.editSubmission = async (req, res) => {
     // Count the number of uploaded docx files
     const docxFiles = uploadedFiles.filter((file) => {
       const ext = path.extname(file.name).toLowerCase();
-      return ext === ".docx" || ext === ".doc";
+      return ext === ".docx" || ext === ".doc" || ext === ".pdf";
     });
     console.log("Word file: " + docxFiles);
     const duplicate = new Set(uploadedFiles.map((item) => item.name));
