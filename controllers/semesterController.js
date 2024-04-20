@@ -98,7 +98,7 @@ const updateSemester = async (req, res) => {
         },
       },
     ]);
-    if ((existingSemester.length = 1  && !(existingSemester[0].academic_year == semester.academic_year))
+    if ((existingSemester.length = 1  && (existingSemester[0].academic_year != semester.academic_year))
           || existingSemester.length > 1) {
       return res
         .status(400)
