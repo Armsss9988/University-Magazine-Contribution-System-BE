@@ -494,11 +494,9 @@ exports.updateComment = async (req, res) => {
     if (!comment_content || !status) {
       return res.status(400).json({ message: "Missing input" });
     }
-    try {
-    } catch (err) {}
     const currentTime = getLocalTime.getDateNow();
-    try {
-      const updatedSubmission = await Submission.findByIdAndUpdate(
+
+    const updatedSubmission = await Submission.findByIdAndUpdate(
         req.params.id,
         {
           status: status,
@@ -507,23 +505,20 @@ exports.updateComment = async (req, res) => {
         },
         { new: true }
       );
-    } catch (err) {
-      return res.status(400).json({ message: `Invalid input` });
-    }
 
     try {
 
-      const recipient = await User.findById(updatedSubmission.student._id);
+      const recipient = await User.findById(updatedSubmission.student);
       if (recipient != null) {
-        const title = `Dear ${recipient?.username}! You have a new comment on the article you sent us.!`;
-        const senderEmail = user.email;
+        const title = `Dear ${recipient.username}! You have a new comment on the article you sent us.!`;
         const role = user.role;
+        console.log("role: " + role);
         await sendEmail.sendEmailNotification(
-          senderEmail,
-          user.username,
+          user.email,
+          user.username || "Anonymous",
           role,
-          recipient?.email,
-          recipient?.username,
+          recipient.email,
+          recipient.username,
           title,
           comment_content
         );
