@@ -300,7 +300,7 @@ exports.editSubmission = async (req, res) => {
         .status(400)
         .json({ message: "We dont have entry for this faculty now" });
     }
-    if (entry.closed) {
+    if (entry.status == "closed") {
       return res
         .status(400)
         .json({ message: "Entry closed, you cant edit submission anymore" });
@@ -405,7 +405,7 @@ exports.updateSubmission = async (req, res) => {
         .json({ message: "You dont have title for this submission now" });
     }
     const entry = await Entry.findById(submission.entry);
-    if (!entry.closed) {
+    if (entry.status != "closed") {
       return res.status(400).json({
         message: "Now you can edit entire submission instead of only update",
       });
@@ -416,7 +416,7 @@ exports.updateSubmission = async (req, res) => {
         message: "We dont have semester for this entry of submission now",
       });
     }
-    if (semester.closed) {
+    if (semester.status == "closed") {
       return res.status(400).json({ message: "Semester closed" });
     }
     if (!req.files || !req.files.File) {
