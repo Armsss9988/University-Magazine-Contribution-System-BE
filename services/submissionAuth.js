@@ -80,7 +80,7 @@ const checkSubmissionUser = async (req, res) => {
     if (!submission) {
       return res.status(500).json({ message: `Error get submission!` });
     }
-    if (!user.equals(submission.student)) {
+    if (!req.user.id.equals(submission.student)) {
       return res
         .status(500)
         .json({

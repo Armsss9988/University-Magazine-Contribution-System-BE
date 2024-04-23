@@ -77,6 +77,7 @@ const updateSemester = async (req, res) => {
     }
     semester.start_date = req.body.start_date;
     semester.final_closure_date = req.body.final_closure_date;
+    console.log("start: " + semester.start_date);
     semester.academic_year = req.body.academic_year;
     const existingSemester = await Semester.aggregate([
       {
@@ -98,7 +99,7 @@ const updateSemester = async (req, res) => {
         },
       },
     ]);
-    if ((existingSemester.length = 1  && (existingSemester[0].academic_year != semester.academic_year))
+    if ((existingSemester.length = 1  && (!existingSemester[0]._id.equals(semester._id)))
           || existingSemester.length > 1) {
       return res
         .status(400)

@@ -10,7 +10,6 @@ const emailService = require("../services/sendEmail");
 const getLocalTime = require("../services/getLocalTime");
 const sendEmail = require("../services/sendEmail");
 const archiver = require("archiver");
-const docxtemplater = require("docxtemplater");
 var AdmZip = require("adm-zip");
 
 // Create a new submission

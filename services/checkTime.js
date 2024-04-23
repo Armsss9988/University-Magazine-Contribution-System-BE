@@ -5,7 +5,7 @@ const Semester = require("../models/semesterModel");
 
 const autoCloseEntriesAndSemesters = async () => {
   console.log("Checking");
-  const currentDate = localTime.getDateNow();
+  const currentDate = new Date();
   await Semester.find()
   .then((semesters) => {
     semesters.forEach(async (semester) => {
