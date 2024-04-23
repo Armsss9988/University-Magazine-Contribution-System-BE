@@ -515,7 +515,7 @@ exports.updateComment = async (req, res) => {
         console.log("role: " + role);
         await sendEmail.sendEmailNotification(
           user.email,
-          user.username || "Anonymous",
+          user.username,
           role,
           recipient.email,
           recipient.username,
