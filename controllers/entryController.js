@@ -60,16 +60,21 @@ const entryController = {
 
   async createEntry(req, res) {
     try {
+      if(req.body.faculty == null || req.body.faculty == ""){
+        return res.status(400).json({message: "Please input faculty"})
+      }
       const faculty = await Faculty.findById(req.body.faculty);
       if (!faculty) {
         return res.status(404).json({ message: "Faculty not found" });
       }
-
+      if(req.body.semester == null || req.body.semester == ""){
+        return res.status(400).json({message: "Please input semester"})
+      }
       const semester = await Semester.findById(req.body.semester);
       if (!semester) {
         return res.status(404).json({ message: "Semester not found" });
       }
-      if (semester.closed) {
+      if (semester.status == "closed") {
         return res.status(400).json({ message: "Semester closed" });
       }
       if(req.body.name == null){
@@ -93,16 +98,21 @@ const entryController = {
 
   async updateEntry(req, res) {
     try {
+      if(req.body.faculty == null || req.body.faculty == ""){
+        return res.status(400).json({message: "Please input faculty"})
+      }
       const faculty = await Faculty.findById(req.body.faculty);
       if (!faculty) {
         return res.json({ message: "Faculty not found" });
       }
-
+      if(req.body.semester == null || req.body.semester == ""){
+        return res.status(400).json({message: "Please input semester"})
+      }
       const semester = await Semester.findById(req.body.semester);
       if (!semester) {
         return res.json({ message: "Semester not found" });
       }
-      if (semester.closed) {
+      if (semester.status == "closed") {
         return res.json({ message: "Semester closed" });
       }
       const name = req.body.name;
